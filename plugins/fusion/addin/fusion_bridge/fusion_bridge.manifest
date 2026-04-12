@@ -1,0 +1,12 @@
+{
+	"autodeskProduct":	"Fusion",
+	"type":	"addin",
+	"author":	"",
+	"description":	{
+		"":	"TCP bridge for MCP automation — exposes Fusion 360 API on localhost:8765"
+	},
+	"version":	"1.0.0",
+	"runOnStartup":	true,
+	"supportedOS":	"windows|mac",
+	"editEnabled":	true
+}

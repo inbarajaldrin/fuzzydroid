@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "fuzzydroid",
+  "owner": {
+    "name": "Aldrin Inbaraj"
+  },
+  "metadata": {
+    "description": "Robotics-developer plugins for Claude Code - Fusion 360, URDF, RViz, Gazebo, IsaacSim",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "fusion",
+      "source": "./plugins/fusion",
+      "version": "0.1.0",
+      "description": "Control Autodesk Fusion 360 from Claude Code - search projects, open files, export STEP/STL/URDF, run Python scripts inside Fusion's runtime",
+      "author": {
+        "name": "Aldrin Inbaraj"
+      },
+      "category": "development",
+      "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+      "tags": ["fusion360", "autodesk", "cad", "urdf", "step", "stl", "robotics"]
+    }
+  ]
+}

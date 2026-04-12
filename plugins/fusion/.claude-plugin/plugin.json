@@ -1,0 +1,20 @@
+{
+  "name": "fusion",
+  "version": "0.1.0",
+  "description": "Control Autodesk Fusion 360 from Claude Code - search projects, open files, export STEP/STL/URDF, run Python scripts inside Fusion's runtime",
+  "author": {
+    "name": "Aldrin Inbaraj"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+  "repository": "https://github.com/inbarajaldrin/fuzzydroid",
+  "keywords": [
+    "fusion360",
+    "autodesk",
+    "cad",
+    "urdf",
+    "step",
+    "stl",
+    "robotics"
+  ]
+}

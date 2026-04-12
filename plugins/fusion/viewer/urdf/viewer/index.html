@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!--
+          This viewer bundles:
+            - urdf-loaders (https://github.com/gkjohnson/urdf-loaders, Apache-2.0)
+            - Three.js (https://github.com/mrdoob/three.js, MIT, Copyright 2010-2024 Three.js Authors)
+          See NOTICES.md at the fuzzydroid repo root for full attribution.
+        -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta charset="utf-8"/>
+        <title>URDF Viewer — Cup Urdf</title>
+        <script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.4.3/webcomponents-bundle.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet"/>
+        <script type="module" crossorigin src="./assets/index-Dy8aP9uk.js"></script>
+        <link rel="modulepreload" crossorigin href="./assets/URDFLoader-BlOKAJT-.js">
+        <link rel="modulepreload" crossorigin href="./assets/URDFDragControls-BpHxNhfn.js">
+        <link rel="modulepreload" crossorigin href="./assets/OrbitControls-Dee3VBUL.js">
+        <link rel="stylesheet" crossorigin href="./assets/index-DuWYSGt3.css">
+    </head>
+    <body tabindex="0">
+        <div id="menu">
+            <ul id="urdf-options">
+                <li urdf="./robot/urdf/cup.urdf" color="#2196F3" up="+Z">Cup</li>
+            </ul>
+            <div id="controls">
+                <div id="toggle-controls"></div>
+                <div>Drag and drop URDF files or folders! <br/> (Chrome Only)</div>
+                <div id="ignore-joint-limits" class="toggle">Ignore Joint Limits</div>
+                <div id="hide-fixed" class="toggle">Hide Fixed Joints</div>
+                <div id="radians-toggle" class="toggle">Use Radians</div>
+                <div id="autocenter-toggle" class="toggle checked">Autocenter</div>
+                <div id="collision-toggle" class="toggle">Show Collision</div>
+                <div id="do-animate" class="toggle">Animate Joints</div>
+                <label>
+                    Up Axis
+                    <select id="up-select">
+                        <option value="+X">+X</option>
+                        <option value="-X">-X</option>
+                        <option value="+Y">+Y</option>
+                        <option value="-Y">-Y</option>
+                        <option value="+Z">+Z</option>
+                        <option value="-Z" selected>-Z</option>
+                    </select>
+                </label>
+                <ul></ul>
+            </div>
+        </div>
+        <urdf-viewer up="-Z" display-shadow tabindex="0" package="cup_pkg:./robot"></urdf-viewer>
+        <script>
+        // Auto-zoom camera to fit the URDF bounding box after model loads.
+        // Avoids THREE imports by reading world matrices and geometry bounds directly.
+        document.addEventListener('WebComponentsReady', () => {
+            const viewer = document.querySelector('urdf-viewer');
+            viewer.addEventListener('urdf-processed', () => {
+                requestAnimationFrame(() => {
+                    const robot = viewer.robot;
+                    if (!robot) return;
+                    const target = viewer.controls.target;
+                    let maxExtent = 0;
+                    robot.traverse(child => {
+                        if (child.isMesh && child.geometry) {
+                            child.geometry.computeBoundingSphere();
+                            const r = child.geometry.boundingSphere
+                                    ? child.geometry.boundingSphere.radius : 0;
+                            child.updateWorldMatrix(true, false);
+                            const m = child.matrixWorld.elements;
+                            // Extract world scale to convert local radius to world units
+                            const sx = Math.sqrt(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
+                            const worldR = r * sx;
+                            const dx = m[12] - target.x;
+                            const dy = m[13] - target.y;
+                            const dz = m[14] - target.z;
+                            const d = Math.sqrt(dx*dx + dy*dy + dz*dz) + worldR;
+                            if (d > maxExtent) maxExtent = d;
+                        }
+                    });
+                    const dist = Math.max(maxExtent * 2.5, 0.15);
+                    viewer.camera.position.set(-dist, dist * 0.6, dist);
+                    viewer.controls.update();
+                });
+            });
+        });
+        </script>
+    </body>
+</html>
