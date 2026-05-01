@@ -1,0 +1,23 @@
+{
+  "skill_name": "isaac-groot",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to fine-tune GR00T-N1.5 on a Fourier GR1 humanoid with my own teleop demos. What's the full pipeline — dataset format, Isaac Lab training setup, config files, launch command?",
+      "expected_output": "Fetches the raw GR00T README from raw.githubusercontent.com/NVIDIA/Isaac-GR00T/main/README.md for the fine-tuning flow, the HF GR00T-N1.5-3B model card for the model-specific training recipe, and cross-refs lerobot for LeRobotDataset format + isaac-lab for the training env. Walks through dataset recording → LeRobotDataset conversion → Isaac Lab env → GR00T fine-tune script → eval. Cites github.com/NVIDIA/Isaac-GR00T and huggingface.co/nvidia/GR00T-N1.5-3B URLs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What's the difference between GR00T N1, N1.5, and Nx? I saw GR00T-Mimic and GR00T-Dreams too — what do those do?",
+      "expected_output": "Fetches the GR00T README (raw) for model family overview + Mimic (data generation) + Dreams (video-conditioned) descriptions, plus HF model cards for N1.5-3B and N1-2B for per-model details. Clarifies Mimic = teleop retargeting / data aug; Dreams = video-conditioned policy fine-tuning. Cites GitHub and HF URLs.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I'm looking at the nvidia/GR00T-N1-3B model card but I'm getting 401. How do I get access, and is there an alternative I can try without gating?",
+      "expected_output": "Explains the HF gating (accept license on huggingface.co/nvidia/GR00T-N1-3B UI). Falls back to the GitHub README for N1-3B description and suggests GR00T-N1.5-3B or GR00T-N1-2B as non-gated alternatives. Cites both HF URLs.",
+      "files": []
+    }
+  ]
+}

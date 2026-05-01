@@ -1,0 +1,23 @@
+{
+  "skill_name": "nvidia-cosmos",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to generate synthetic training video for a robot manipulation policy — inputs are an Isaac Sim RGB clip + a text description of the desired behavior. Which Cosmos repo do I use, and what's the inference command?",
+      "expected_output": "Recommends cosmos-predict2 or cosmos-predict2.5 (video prediction from image + text). Fetches raw.githubusercontent.com/nvidia-cosmos/cosmos-predict2/main/README.md and/or cosmos-predict2.5 README. Extracts the inference command and required model checkpoint. Cross-refs cosmos-cookbook for end-to-end recipes. Cites github.com/nvidia-cosmos/cosmos-predict2 URL.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What's the difference between cosmos-predict and cosmos-transfer? I think I need physics-aware video-to-video, not pure prediction — style transfer from simulation render to realistic-looking video.",
+      "expected_output": "Fetches raw cosmos-transfer1 README. Distinguishes: predict = imagine future video from observations; transfer = physics-aware video-to-video with conditioners (Canny edges, depth, segmentation). Confirms transfer1 is the right pick for sim-to-real style transfer. Cites both repo URLs.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I see nvidia-cosmos has both cosmos-curator and cosmos-curate — are these the same thing? Which do I use for filtering a messy YouTube video collection for robotics training data?",
+      "expected_output": "Fetches raw READMEs for BOTH cosmos-curator and cosmos-curate to determine scope overlap / divergence. Reports the distinction based on actual content (they may differ in scale or purpose). Cites both GitHub URLs and recommends the current canonical one.",
+      "files": []
+    }
+  ]
+}

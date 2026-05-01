@@ -1,0 +1,23 @@
+{
+  "skill_name": "omniverse-replicator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm a manufacturing engineer — want to generate 10k synthetic images of a PCB with randomized lighting / camera angles / component defects, with 2D bounding box + instance segmentation labels saved in COCO format. Show me the minimal Replicator Python script structure and point me at the right annotator + writer docs.",
+      "expected_output": "Fetches ext_replicator/basic_functionalities.html.md for the overall script skeleton (rep.create, randomizers, rep.trigger.on_frame, annotators, writer), ext_replicator/annotators_details.html.md for bounding_box_2d_tight + instance_segmentation annotator details, and ext_replicator/writer_examples.html.md for COCOWriter. Produces a minimal script outline. Cites HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What's the contract for writing a custom Writer in Replicator? I want to save data in our in-house HDF5 format, keyed by frame index, with depth + rgb + 3D bbox in one file per frame.",
+      "expected_output": "Fetches ext_replicator/custom_writer.html.md. Extracts the Writer class methods (initialize, write, attach_to, detach) and the registration pattern. Shows how to iterate over annotator outputs to write custom formats. Cites the HTML URL.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Running Replicator headless on an AWS G5 instance at scale. What container image do I use, how do I mount output to S3, and how does the Siemens-style sharding work?",
+      "expected_output": "Fetches ext_replicator/container_setup.html.md + ext_replicator/aws_setup.html.md + ext_replicator/headless_example.html.md. Extracts the NGC container name, GPU passthrough flags, S3 output pattern, and parallel worker scaling. Cites the HTML URLs.",
+      "files": []
+    }
+  ]
+}

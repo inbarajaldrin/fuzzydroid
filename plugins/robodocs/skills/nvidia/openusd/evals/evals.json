@@ -1,0 +1,23 @@
+{
+  "skill_name": "openusd",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm new to USD. Can you show me the minimal Python to create a stage, add a sphere at origin with a red material assigned, and save to disk as .usda? Also — for the material bit, point me at the authoritative overview of the UsdShade workflow.",
+      "expected_output": "Fetches https://openusd.org/release/tut_helloworld.html for stage+sphere+save, then https://openusd.org/release/tut_simple_shading.html for the UsdShade Material/Shader/binding flow. Extracts the Python snippets (imports, Stage.CreateNew, DefinePrim('/World/Sphere', 'Sphere'), UsdShade.Material.Define, UsdShade.Shader, MaterialBindingAPI). Cites both HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What's the actual difference between a `references` composition arc and a `sublayers` composition arc in USD? When would I pick one over the other? And where does this fit in the LIVRPS order?",
+      "expected_output": "Fetches https://openusd.org/release/usdfaq.html (anchor #i-have-some-layers-i-want-to-combine-should-i-use-sublayers-or-references) for the direct sublayers-vs-references explanation, plus https://openusd.org/release/glossary.html for LIVRPS definition and arc semantics. Extracts the use-case distinction (sublayers = additive stack within one stage; references = instance another hierarchy at a path) and places both in the LIVRPS strength order. Cites the HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I want to author a SphereLight in Python with radius 0.5, color temperature 6500K, and intensity 500. Also — what's the full list of attributes LightAPI provides that apply to all lights? And is `treatAsPoint` a thing on SphereLight or somewhere else?",
+      "expected_output": "Fetches https://openusd.org/release/user_guides/schemas/usdLux/SphereLight.html for SphereLight-specific attributes (radius, treatAsPoint) and https://openusd.org/release/user_guides/schemas/usdLux/LightAPI.html for the common attributes (color, intensity, exposure, diffuse, specular, enableColorTemperature, colorTemperature, normalize). Confirms `treatAsPoint` is on SphereLight. Shows a Python snippet using UsdLux.SphereLight.Define plus the LightAPI attribute writes. Cites both HTML URLs.",
+      "files": []
+    }
+  ]
+}

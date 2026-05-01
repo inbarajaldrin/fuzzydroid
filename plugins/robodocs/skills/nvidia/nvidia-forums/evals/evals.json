@@ -1,0 +1,23 @@
+{
+  "skill_name": "nvidia-forums",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Has anyone on the NVIDIA forums figured out how to get Quest Pro hand tracking working with Isaac Sim via OpenXR? I'm hitting an 'Unknown OpenXR Error [-2]' when switching from SteamVR to OpenXR.",
+      "expected_output": "Fetches /search.json?q=Quest%20Pro%20OpenXR%20Isaac%20Sim%20hand%20tracking — finds the 'How to use openxr on Isaac Sim with VR Experience extensions' thread (topic id 296597). Follows /t/how-to-use-openxr-on-isaac-sim-with-vr-experience-extenstions/296597.json, extracts the user's original error and any staff reply. Notes thread status (resolved / unresolved / stale). Cites the HTML URL.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What are NVIDIA staff saying about the status of Isaac Sim on Ubuntu 24.04? The docs say 22.04 is supported — is there a thread about 24.04 support?",
+      "expected_output": "Searches /search.json?q=Isaac%20Sim%20Ubuntu%2024.04 — follows top results, filters posts where admin/moderator/staff is true, extracts the NVIDIA-authoritative statements about 24.04 support timeline. Flags staleness via last_posted_at. Cites HTML URLs. If the query yields nothing substantive, falls back to browsing /c/omniverse/isaac-sim/69.json for recent installation threads.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Browse the Omniverse XR & Spatial Computing forum category for the most recent ~10 threads. I want to see what people are struggling with lately.",
+      "expected_output": "Fetches /c/omniverse/xr-spatial-computing/707.json, reads topic_list.topics sorted by bumped_at, returns top 10 with title / posts_count / reply_count / last_posted_at. Cites the HTML URL of the category plus optionally the top 2-3 individual threads for quick context.",
+      "files": []
+    }
+  ]
+}

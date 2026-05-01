@@ -5,8 +5,8 @@
     "name": "Aldrin Inbaraj"
   },
   "metadata": {
-    "description": "Robotics-developer plugins for Claude Code - Fusion 360, URDF, RViz, Gazebo, IsaacSim",
-    "version": "0.1.0"
+    "description": "Robotics-developer plugins for Claude Code",
+    "version": "0.2.0"
   },
   "plugins": [
     {
@@ -20,6 +20,18 @@
       "category": "development",
       "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
       "tags": ["fusion360", "autodesk", "cad", "urdf", "step", "stl", "robotics"]
+    },
+    {
+      "name": "robodocs",
+      "source": "./plugins/robodocs",
+      "version": "0.1.0",
+      "description": "Live-fetched documentation skills for the robotics stack — HuggingFace LeRobot and the NVIDIA Physical-AI suite (Isaac Sim/Lab/ROS, GR00T, Cosmos, Warp, Omniverse, OpenUSD)",
+      "author": {
+        "name": "Aldrin Inbaraj"
+      },
+      "category": "documentation",
+      "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+      "tags": ["robotics", "lerobot", "nvidia", "isaac", "isaac-sim", "isaac-lab", "isaac-ros", "openusd", "omniverse", "docs"]
     }
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "skill_name": "omniverse-kit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to scaffold a new Omniverse Kit extension — what's the minimum `extension.toml` needs to have, how do I register a Python entry point, and where does the extension live on disk inside a Kit app?",
+      "expected_output": "Fetches https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/index.html.md and the extension-creation subpage (derive from the sidebar). Extracts the minimal extension.toml schema (name, version, dependencies, python.module), the entry-point registration via omni.ext.IExt subclass, and the extension search-path / disk layout. Cites the HTML URL.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What are the new standalone Omniverse libraries NVIDIA announced in 2025 — ovrtx, ovphysx, ovstorage — and how do they relate to Kit? Can I embed just ovrtx into my own C++ app without pulling in the whole Kit runtime?",
+      "expected_output": "Fetches https://developer.nvidia.com/omniverse for the unbundled-libraries overview and cross-refs docs.omniverse.nvidia.com sitemap for detailed pages. Explains that ovrtx/ovphysx/ovstorage are unbundled pieces of Omniverse (2025+) intended for embedding without full Kit. Confirms embedding scenario. Cites the developer portal URL.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Inside my Kit extension I need to read a setting from omniverse.toml and subscribe to changes. How do I use carb.settings from Python?",
+      "expected_output": "Fetches https://docs.omniverse.nvidia.com/kit/docs/kit-manual/latest/carb.settings.html.md. Extracts the acquire_settings_interface pattern, get_string_array / get_int / set_string APIs, and subscribe_to_node_change / subscribe_to_tree_change for change notifications. Cites the HTML URL.",
+      "files": []
+    }
+  ]
+}

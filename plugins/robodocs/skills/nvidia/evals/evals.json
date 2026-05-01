@@ -1,0 +1,23 @@
+{
+  "skill_name": "nvidia",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm building a humanoid robot from scratch on the NVIDIA stack. I want to: (1) simulate the robot in sim, (2) train a policy with RL, (3) generate some synthetic training video with a world model, (4) deploy to the real robot with ROS 2. Which parts of the NVIDIA stack do I use and in what order?",
+      "expected_output": "Uses the meta-router to stage across skills: (1) isaac-sim (simulation + URDF), (2) isaac-lab (RL training on Sim), (3) nvidia-cosmos (world-model video generation) OR omniverse-replicator (deterministic SDG), (4) isaac-ros (ROS 2 GPU packages + sim-to-real bridge). For humanoid specifically, also mentions isaac-groot as the foundation-model option. Explains routing via the stack hierarchy. Does not fetch into sub-skill docs; just routes.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What's the actual relationship between NVIDIA Omniverse and NVIDIA Isaac Sim? I keep seeing Isaac Sim described as 'built on Omniverse' but also as a separate product.",
+      "expected_output": "Reads shared/overview.md and explains: Isaac Sim is a Kit app (so technically built on Omniverse's Kit framework), BUT Isaac is a peer product line with its own developer portal and GitHub org (isaac-sim/*). Isaac Lab 3.0 is moving off monolithic Kit onto standalone Omniverse libraries (ovrtx/ovphysx/ovstorage). 'Uses Omniverse components, markets as separate platform' is the accurate framing. Cites the overview + Omniverse and Isaac developer portals.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I want to use Replicator to generate synthetic data. For Isaac Sim robots, should I use isaacsim.replicator or omni.replicator.core directly? Which skill should answer that?",
+      "expected_output": "Applies the 'parent vs product' routing principle: omniverse-replicator owns generic SDG (randomizers / annotators / writers). isaac-sim owns `isaacsim.replicator` which wraps omni.replicator.core with robot-specific additions (sensor-aware writers, articulation pose randomization). For a robot-in-sim scenario, route to isaac-sim. For generic CV (defect detection, AV, manufacturing), route to omniverse-replicator. Both are valid; the context decides.",
+      "files": []
+    }
+  ]
+}

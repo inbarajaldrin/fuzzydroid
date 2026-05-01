@@ -1,0 +1,23 @@
+{
+  "skill_name": "isaac-ros",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a custom manipulator (6-DOF arm, URDF available) and I want to use cuMotion with MoveIt 2 on Humble to plan motions. What's the setup — config files, integration steps, and how do I test in Isaac Sim before running on the real robot?",
+      "expected_output": "Fetches concepts/manipulation/cumotion_moveit/tutorial_custom_manipulator.html for the custom-robot integration (XRDF, collision spheres, joint groups), concepts/manipulation/cumotion_moveit/tutorial_isaac_sim.html for the sim test flow, and concepts/manipulation/xrdf.html for the XRDF format. Cites HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I want FoundationPose running on Jetson Orin to do 6D pose tracking of a custom widget. I have the CAD file as STEP — how do I prep the mesh, and how do I wire the ROS 2 graph?",
+      "expected_output": "Fetches concepts/pose_estimation/foundationpose/index.html for package setup, tutorial_create_your_own_mesh.html for mesh prep (STEP→OBJ, centering, simplification via tutorial_simplify_mesh.html + tutorial_shift_mesh_center.html), tutorial_tracking.html for the tracking topic graph. Cites HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "NITROS — what's the actual benefit over standard ROS 2 transport, and how do I switch an existing pipeline to use it? Also, what's NITROS Bridge and when do I need it?",
+      "expected_output": "Fetches concepts/nitros/index.html for NITROS overview (GPU-resident zero-copy, TypeAdapter / TypeNegotiation), concepts/nitros/cuda_with_nitros.html for the CUDA-aware tensor-passing, concepts/nitros_bridge/tutorial_isaac_sim.html for NITROS Bridge (sim→real connector). Explains NITROS ≠ NITROS Bridge. Cites HTML URLs.",
+      "files": []
+    }
+  ]
+}

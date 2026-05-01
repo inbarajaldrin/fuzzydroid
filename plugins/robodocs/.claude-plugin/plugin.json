@@ -1,0 +1,28 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "robodocs",
+  "version": "0.1.0",
+  "description": "Live-fetched documentation skills for the robotics stack — HuggingFace LeRobot and the NVIDIA Physical-AI suite (Isaac Sim/Lab/ROS, GR00T, Cosmos, Warp, Omniverse, OpenUSD)",
+  "author": {
+    "name": "Aldrin Inbaraj"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+  "repository": "https://github.com/inbarajaldrin/fuzzydroid",
+  "keywords": [
+    "robotics",
+    "lerobot",
+    "nvidia",
+    "isaac",
+    "isaac-sim",
+    "isaac-lab",
+    "isaac-ros",
+    "openusd",
+    "omniverse",
+    "docs"
+  ],
+  "skills": [
+    "./skills/lerobot",
+    "./skills/nvidia"
+  ]
+}

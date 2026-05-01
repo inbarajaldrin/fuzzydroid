@@ -1,0 +1,23 @@
+{
+  "skill_name": "nvidia-warp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to write my first Warp kernel — add two float arrays of length 1024 elementwise on the GPU. Show me the minimal code: imports, kernel definition, array creation, launch, and reading the result back. Also — what's the deal with Python-scope vs kernel-scope? I saw a warning about that.",
+      "expected_output": "Fetches https://nvidia.github.io/warp/user_guide/basics.html (anchors #kernels, #arrays, #initialization, #python-scope-vs-kernel-scope-api). Extracts the minimal @wp.kernel example with array input/output, wp.launch, and shows that certain APIs differ inside kernel scope vs Python scope. Cites the HTML URL.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Can Warp arrays interop with PyTorch tensors without copying, and what about JAX? I'm mixing a Warp differentiable sim with a PyTorch policy and I want to avoid host round-trips.",
+      "expected_output": "Fetches https://nvidia.github.io/warp/user_guide/interoperability.html for the DLPack / torch / jax interop surface. Extracts the zero-copy conversion pattern (wp.from_torch, wp.to_torch, jax interop via warp.jax_experimental). Mentions the experimental caveat on JAX. Cites the HTML URL and the experimental-jax sub-page.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I need a fast per-block matmul inside a kernel using Warp's tile primitives — like tile_zeros, tile_load, tile_matmul. Where's the authoritative reference, and are there any shared-memory gotchas I should know about?",
+      "expected_output": "Fetches https://nvidia.github.io/warp/language_reference/builtins.html#tile-primitives for the tile built-in catalog and https://nvidia.github.io/warp/user_guide/tiles.html for the programming model. Extracts tile_zeros / tile_load / tile_store / tile_matmul signatures, shared-memory capacity rules, and any caveats. Cites both HTML URLs.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "skill_name": "isaac-lab",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to train a PPO policy for a quadruped to walk on rough terrain. Should I use Manager-Based or Direct workflow? Show me the minimal config for terrain curriculum, observation/reward managers, and how to launch training with rsl_rl on 4 GPUs.",
+      "expected_output": "Fetches source/overview/core-concepts/task-workflows.html for the Manager-Based vs Direct choice (recommends Manager-Based for terrain/curriculum reuse), source/api/lab/isaaclab.envs.mdp.html for prebuilt reward/obs terms, source/api/lab/isaaclab.terrains.html for TerrainImporter with curriculum, source/features/multi_gpu.html for the torchrun 4-GPU launch, and source/overview/reinforcement-learning/rl_existing_scripts.html for rsl_rl. Cites HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have a custom robot URDF and I want to register a new manipulation env in Isaac Lab using the Direct workflow with dict observations and a sparse reward. What's the minimum env class I need to write, and how does Hydra pick up my config?",
+      "expected_output": "Fetches source/tutorials/03_envs/create_direct_rl_env.html for the DirectRLEnv class skeleton (_get_observations, _get_rewards, _reset_idx, _apply_action), source/api/lab/isaaclab.envs.html for DirectRLEnvCfg, source/features/hydra.html for the Hydra config registration. Shows the minimal class outline. Cites HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Teach me about Isaac Lab Mimic — I want to collect human teleop demos on a Franka and auto-generate 10x augmented demos for behavioral cloning. What's the full pipeline?",
+      "expected_output": "Fetches source/overview/imitation-learning/index.html for Mimic overview, source/tutorials/04_teleoperation/teleop_and_imitation.html for teleop recording, source/api/lab_mimic/isaaclab_mimic.datagen.html for the DataGenerator augmentation API. Walks through: record seed demos via teleop device → configure DataGenerator subtask decomposition → run SkillGen augmentation → export. Cites HTML URLs.",
+      "files": []
+    }
+  ]
+}

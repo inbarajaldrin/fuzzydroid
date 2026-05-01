@@ -1,0 +1,23 @@
+{
+  "skill_name": "lerobot",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I just bought an SO-101 arm. Walk me through installing LeRobot, calibrating the arm, recording a 50-episode dataset, and training an ACT policy on it.",
+      "expected_output": "Fetches https://huggingface.co/docs/lerobot/installation.md for install, https://huggingface.co/docs/lerobot/so101.md for calibration, https://huggingface.co/docs/lerobot/il_robots.md for the record+train flow, and https://huggingface.co/docs/lerobot/act.md for ACT-specific hyperparameters. Cites the HTML URLs back to the user.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What changed in LeRobotDataset v3 vs v2, and how do I port an existing v2 dataset?",
+      "expected_output": "Applies the .md rewrite rule to fetch https://huggingface.co/docs/lerobot/lerobot-dataset-v3.md and https://huggingface.co/docs/lerobot/porting_datasets_v3.md, extracts the schema diff and migration CLI, cites both HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I want to write my own policy class that plugs into LeRobot's training loop. What interface do I need to implement?",
+      "expected_output": "Fetches https://huggingface.co/docs/lerobot/bring_your_own_policies.md (primary) and optionally https://huggingface.co/docs/lerobot/action_representations.md for action-space config. Extracts the required class methods (forward, select_action, config keys) and the minimal example. Cites the HTML URL.",
+      "files": []
+    }
+  ]
+}

@@ -7,6 +7,7 @@ An AI agent plugin marketplace for robotics developers.
 | Plugin | Description |
 |---|---|
 | [`fusion`](plugins/fusion/) | Control Autodesk Fusion 360 — search, open, export STEP/STL/URDF, view models, run Python |
+| [`robodocs`](plugins/robodocs/) | Live-fetched docs for the robotics stack — LeRobot + the NVIDIA Physical-AI suite (Isaac, GR00T, Cosmos, Warp, Omniverse, OpenUSD) |
 
 ## Install
 
@@ -14,19 +15,23 @@ In Claude Code:
 
 ```
 /plugin marketplace add https://github.com/inbarajaldrin/fuzzydroid
-/plugin install fusion@fuzzydroid
-/fusion:setup
 ```
 
-Then open Fusion 360 → Shift+S → Add-Ins → click "Run" + "Run on Startup" on `fusion_bridge`.
+Then install the plugins you want:
 
-Verify: `/fusion:doctor`
+```
+/plugin install fusion@fuzzydroid       # see plugins/fusion/README.md for setup
+/plugin install robodocs@fuzzydroid     # robotics documentation skills
+```
 
 ## Requirements
 
-- macOS or Windows 10+ (Linux not supported in v0)
-- [`uv`](https://docs.astral.sh/uv/) — install with `curl -LsSf https://astral.sh/uv/install.sh | sh` on macOS/Linux, or `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"` on Windows
-- Autodesk Fusion 360 installed (for the `fusion` plugin)
+- Claude Code
+
+Plugin-specific requirements live in each plugin's README:
+
+- [`fusion`](plugins/fusion/README.md) — Fusion 360, `uv`, macOS/Windows
+- [`robodocs`](plugins/robodocs/README.md) — none
 
 ## License
 

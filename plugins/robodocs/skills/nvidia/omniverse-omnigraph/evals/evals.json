@@ -1,0 +1,23 @@
+{
+  "skill_name": "omniverse-omnigraph",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "What's the actual difference between an Action Graph and a Push Graph in OmniGraph? I'm building an IoT digital twin that updates when a sensor value changes — which do I pick?",
+      "expected_output": "Fetches ext_omnigraph/getting-started/core_concepts.html.md + the Action Graph concept doc at /kit/docs/omni.graph.docs/.../ActionGraph.html (HTML fallback). Extracts: Action = event-driven (OnTick, OnImpulseEvent, OnKeyboardInput triggers), Push = continuous evaluation (data flow). For IoT sensor-triggered updates → Action Graph with OnImpulseEvent or a push subgraph inside an action trigger. Cites HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I'm writing a custom OmniGraph node in Python that takes two float arrays as input, sums them, and outputs a float array. What's the node authoring contract — compute() signature, attribute declaration, the `.ogn` file format?",
+      "expected_output": "Fetches /kit/docs/omni.graph/latest/index.html (HTML — .md 403) and ext_omnigraph/getting-started/core_concepts.html.md. Extracts the .ogn JSON schema (name, description, inputs, outputs, state), the compute() Python pattern (db.inputs.x, db.outputs.y), and attribute type conventions (float[], vectorf[3], bundle). Cites HTML URLs.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I need to drive a character's walk/run blend from keyboard input in USD Composer — I think this is an AnimGraph thing but it sits on OmniGraph? Walk me through what I need to set up.",
+      "expected_output": "Fetches ext_animation-graph/lesson_animgraph-workflow.html.md + ext_animation-graph.html.md. Explains AnimGraph as a node-graph layer on Action Graph, shows loading a character, creating an AnimGraph, adding walk/run clips, blending via a Blend node driven by a keyboard-event Action Graph. Cites HTML URLs.",
+      "files": []
+    }
+  ]
+}
