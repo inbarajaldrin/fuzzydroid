@@ -20,6 +20,10 @@ NVIDIA Omniverse ─────────────────┐   NVIDIA
                                   │                                 │
 
 NVIDIA Warp — standalone Python GPU framework, used across Omniverse / Isaac / external
+
+NGC Catalog — distribution layer for the entire stack
+  (containers / models / Helm charts / resources / collections)
+  Querying NGC answers "what's actually pullable right now"
 ```
 
 ## Three non-obvious facts
@@ -27,6 +31,7 @@ NVIDIA Warp — standalone Python GPU framework, used across Omniverse / Isaac /
 1. **Isaac is a peer to Omniverse, not a child.** Separate developer portal (`developer.nvidia.com/isaac` vs `nvidia.com/en-us/omniverse`), separate GitHub org (`isaac-sim/*` vs Omniverse extensions), separate release cadence. Isaac *uses* Omniverse, but it's a peer product line.
 2. **OpenUSD is not NVIDIA-owned.** It's the Linux Foundation AOUSD standard (originally Pixar). Used by Omniverse, Apple RealityKit, Houdini, Maya, Blender, Unreal, and many VFX/CAD pipelines. An openusd skill should answer cross-ecosystem questions, not just NVIDIA ones.
 3. **Warp is standalone.** Not an Omniverse component. Ships as a Kit extension AND as a pip package. Used in Isaac Lab (reward/observation kernels), Newton physics engine, and many projects with no NVIDIA stack at all.
+4. **NGC is a distribution layer, not a docs site.** `catalog.ngc.nvidia.com` (browse UI) + `nvcr.io` (Container Registry) host every binary in this stack. Querying NGC answers "what's actually published right now" — a question product docs never answer reliably because tags ship faster than docs do. The `nvidia-ngc` sub-skill is the only one that fetches from NGC; all others can cite it but should not guess tags from memory.
 
 ## The routing principle
 
@@ -60,8 +65,9 @@ Every general tool has a parent skill. Every product that re-exposes that tool i
 | **A — raw markdown** | Use `raw.githubusercontent.com` or `huggingface.co/.../raw/` | `isaac-groot`, `nvidia-cosmos` |
 | **B — Discourse JSON API** | Append `.json` to any forum URL; get structured topic / search / category data | `nvidia-forums` |
 | **D — plain HTML** | WebFetch the HTML URL directly (Sphinx / custom server-rendered) | `openusd`, `nvidia-warp`, `isaac-sim`, `isaac-lab`, `isaac-ros` |
+| **E — Docker Registry v2 + sitemap** | Get anonymous `nvcr.io/proxy_auth` token, hit `nvcr.io/v2/<repo>/tags/list` and `…/manifests/<tag>`; use `catalog.ngc.nvidia.com/sitemap.xml` for URL discovery | `nvidia-ngc` |
 
-**No sub-skill uses Pattern C (embedded JSON in HTML).** Only `nvidia-forums` is Pattern B — it's the only skill with a `references/schema.md` file documenting the structured response shape. Each sub-skill's `references/retrieval-rule.md` documents verified probe commands and the rewrite rule specific to its source.
+**No sub-skill uses Pattern C (embedded JSON in HTML).** Two sub-skills consume structured response shapes and carry `references/schema.md`: `nvidia-forums` (Pattern B — Discourse JSON) and `nvidia-ngc` (Pattern E — Docker Registry v2 + sitemap XML). Each sub-skill's `references/retrieval-rule.md` documents verified probe commands and the rewrite rule specific to its source.
 
 ## Why two peer-platform docs sites behave differently
 
@@ -76,9 +82,11 @@ This is why each sub-skill probes its own site and documents its own rule. Don't
 
 - **`lerobot`** — HuggingFace LeRobot. LeRobotDataset v3 is the dataset format used by Isaac GR00T and increasingly by Isaac Lab Mimic. When the user asks about dataset format in any of those contexts, cross-ref lerobot.
 
-## The forums sub-skill — why it's shaped differently from the others
+## Two cross-cutting sub-skills — why they're shaped differently from the product ones
 
-All ten product sub-skills in this suite wrap **official documentation** for one product. `nvidia-forums` is the only one that wraps **community Q&A** and covers all NVIDIA products at once (CUDA, TensorRT, Jetson, DRIVE, etc.) — not just Omniverse / Isaac / Cosmos.
+Ten of the twelve sub-skills wrap **official documentation** for one product. The other two cut across the stack: `nvidia-forums` wraps community Q&A across every NVIDIA product (CUDA, TensorRT, Jetson, DRIVE, Omniverse, Isaac, Cosmos, GR00T…), and `nvidia-ngc` wraps the distribution catalog where every NVIDIA-published binary lives. Neither is owned by a single product line.
+
+### nvidia-forums (community Q&A)
 
 Why it's separate rather than folded into each product skill:
 
@@ -86,6 +94,16 @@ Why it's separate rather than folded into each product skill:
 - **Different content shape.** Product-docs skills catalog stable entry-point URLs. The forums skill catalogs **categories** and teaches the agent to **search-first** — forum content is query-driven, not URL-driven.
 - **Covers gaps.** Cross-product compatibility questions, "is this a known issue", staff corrections of stale docs — these live in forums but not in product docs. The forums skill is the fallback when product docs don't cover a user's specific situation.
 - **Different retrieval pattern.** Discourse's JSON API (Pattern B) is structurally different from the `.md` suffix / plain HTML patterns used elsewhere. Putting it in its own skill keeps the schema file contained.
+
+### nvidia-ngc (distribution catalog)
+
+Why this is a sub-skill on its own, not folded into the product skills:
+
+- **Distribution surface, not a docs surface.** NGC stores what's *pullable*; product docs explain what's *usable*. Different questions, different answers.
+- **Same retrieval mechanism across products.** Every NVIDIA-published container — Isaac Sim, Cosmos, PyTorch, TensorRT, Triton, Riva, DeepStream, CUDA base — lives in `nvcr.io` and is queryable the same way (anonymous Docker Registry v2 + `proxy_auth` token). One skill, one schema file (`nvidia-ngc/references/schema.md`), one anonymous-auth flow.
+- **Tags drift faster than docs.** A product skill that hard-codes "use `nvcr.io/nvidia/isaac-sim:4.5.0`" is stale within weeks. Routing tag-lookups to `nvidia-ngc` keeps the source-of-truth fresh.
+- **Different retrieval pattern (E).** Docker Registry v2 + sitemap XML — structurally unlike the markdown / HTML / Discourse-JSON patterns used elsewhere. Contained in its own skill so the schema file stays focused.
+- **Honest gap surfacing.** NGC's deep model/dataset metadata is auth-gated. The `nvidia-ngc` sub-skill names that gap and points users to the NGC CLI for keyed access — keeping the rest of the suite anonymous-first.
 
 ## Maintenance
 
@@ -102,4 +120,4 @@ For the meta-router itself (this file and `SKILL.md`), update when:
 - The routing table needs new keywords (new product line, new terminology).
 - The hierarchy shifts (e.g., Isaac Sim moves fully off Kit to unbundled libs).
 
-Last verified: 2026-04-23.
+Last verified: 2026-05-13 (added `nvidia-ngc` sub-skill; verified Docker Registry v2 anonymous flow + sitemap; bumped pattern table with Pattern E).

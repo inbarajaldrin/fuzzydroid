@@ -2,7 +2,7 @@
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "robodocs",
   "version": "0.1.0",
-  "description": "Live-fetched documentation skills for the robotics stack — HuggingFace LeRobot and the NVIDIA Physical-AI suite (Isaac Sim/Lab/ROS, GR00T, Cosmos, Warp, Omniverse, OpenUSD)",
+  "description": "Live-fetched documentation skills for the robotics stack — HuggingFace LeRobot, the NVIDIA Physical-AI suite (Isaac Sim/Lab/ROS, GR00T, Cosmos, Warp, Omniverse, OpenUSD, NGC Catalog, Developer Forums), and the MuJoCo ecosystem (MJX, MJWarp, Menagerie, Playground, MPC, dm_control)",
   "author": {
     "name": "Aldrin Inbaraj"
   },
@@ -11,18 +11,15 @@
   "repository": "https://github.com/inbarajaldrin/fuzzydroid",
   "keywords": [
     "robotics",
+    "docs",
+    "live-fetch",
     "lerobot",
     "nvidia",
-    "isaac",
-    "isaac-sim",
-    "isaac-lab",
-    "isaac-ros",
-    "openusd",
-    "omniverse",
-    "docs"
+    "mujoco"
   ],
   "skills": [
     "./skills/lerobot",
-    "./skills/nvidia"
+    "./skills/nvidia",
+    "./skills/mujoco"
   ]
 }

@@ -1,0 +1,92 @@
+{
+  "skill": "mujoco-docs",
+  "evals": [
+    {
+      "id": "mechanical-readthedocs-overview",
+      "type": "mechanical",
+      "description": "Verify the canonical ReadTheDocs overview page is fetchable with a browser UA and contains expected MuJoCo prose.",
+      "command": "curl -s -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' 'https://mujoco.readthedocs.io/en/stable/overview.html'",
+      "assert": [
+        "exit_code == 0",
+        "stdout_length > 50000",
+        "stdout contains 'MuJoCo'",
+        "stdout contains 'simulation' OR stdout contains 'physics'"
+      ]
+    },
+    {
+      "id": "mechanical-rst-source-fallback",
+      "type": "mechanical",
+      "description": "Verify the raw RST fallback path works for prose-heavy pages.",
+      "command": "curl -s 'https://raw.githubusercontent.com/google-deepmind/mujoco/main/doc/overview.rst'",
+      "assert": [
+        "exit_code == 0",
+        "stdout_length > 5000",
+        "stdout contains 'MuJoCo'"
+      ]
+    },
+    {
+      "id": "catalog-xmlreference",
+      "type": "catalog",
+      "description": "Verify the XML reference URL in the catalog returns substantial content.",
+      "command": "curl -sI -A 'Mozilla/5.0' 'https://mujoco.readthedocs.io/en/stable/XMLreference.html' | head -1",
+      "assert": [
+        "stdout contains '200'"
+      ]
+    },
+    {
+      "id": "catalog-menagerie-listing",
+      "type": "catalog",
+      "description": "Verify Menagerie contents API returns ≥30 robot directories (Menagerie grows over time, so we check a floor).",
+      "command": "gh api repos/google-deepmind/mujoco_menagerie/contents --jq '[.[] | select(.type==\"dir\")] | length'",
+      "assert": [
+        "exit_code == 0",
+        "stdout_as_int >= 30"
+      ]
+    },
+    {
+      "id": "catalog-discussions-reachable",
+      "type": "catalog",
+      "description": "Verify the main MuJoCo discussion forum is reachable.",
+      "command": "curl -sI -A 'Mozilla/5.0' 'https://github.com/google-deepmind/mujoco/discussions' | head -1",
+      "assert": [
+        "stdout contains '200'"
+      ]
+    },
+    {
+      "id": "catalog-mjx-page",
+      "type": "catalog",
+      "description": "Verify the MJX docs landing page returns content.",
+      "command": "curl -s -A 'Mozilla/5.0' 'https://mujoco.readthedocs.io/en/stable/mjx.html' | wc -c",
+      "assert": [
+        "stdout_as_int > 20000"
+      ]
+    },
+    {
+      "id": "behavioral-trigger-core",
+      "type": "behavioral",
+      "description": "Trigger test: the skill should be loaded into available_skills when the user asks a core-simulator question.",
+      "user_prompt": "How do I tune solref and solimp for stable contact in MuJoCo?",
+      "assert": [
+        "skill 'mujoco-docs' appears in available_skills before the response is generated"
+      ]
+    },
+    {
+      "id": "behavioral-trigger-forum",
+      "type": "behavioral",
+      "description": "Trigger test: a forum-style how-do-I question should also load the skill.",
+      "user_prompt": "Where can I see other people's MuJoCo Playground sim-to-real setups?",
+      "assert": [
+        "skill 'mujoco-docs' appears in available_skills before the response is generated"
+      ]
+    },
+    {
+      "id": "behavioral-trigger-menagerie",
+      "type": "behavioral",
+      "description": "Trigger test: naming a Menagerie robot should load the skill.",
+      "user_prompt": "Show me the Unitree Go2 MuJoCo model XML",
+      "assert": [
+        "skill 'mujoco-docs' appears in available_skills before the response is generated"
+      ]
+    }
+  ]
+}

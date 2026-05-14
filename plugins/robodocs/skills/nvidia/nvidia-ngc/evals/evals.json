@@ -1,0 +1,35 @@
+{
+  "skill_name": "nvidia-ngc",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "What's the latest released tag of the NVIDIA Isaac Sim container on NGC, and what CUDA / Omniverse build labels does it carry?",
+      "expected_output": "Gets an anonymous proxy_auth token for repository:nvidia/isaac-sim:pull, fetches https://nvcr.io/v2/nvidia/isaac-sim/tags/list. The list mixes legacy year-style tags (2020.x_ea, 2021.x.x, 2022.x.x) with modern Omniverse-aligned tags (4.x.x). Naive int-sort would rank 2022.2.1 above 4.5.0; the correct behavior is to bucket by the major-version family first (4.x = current Omniverse-aligned, 2022.x = legacy frozen) and pick the newest from the modern family. Then fetches the same repo's manifest at the chosen tag with Accept: application/vnd.docker.distribution.manifest.v1+prettyjws and reads history[0].v1Compatibility.config.Labels to surface com.nvidia.omniverse.build.* labels (branch / build / family / release / compliant). Cites both the catalog URL (catalog.ngc.nvidia.com/orgs/nvidia/teams/isaac/containers/isaac-sim) and the registry path (nvcr.io/nvidia/isaac-sim:<tag>). Includes the verification date in the answer.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Does NGC have anything published for NVIDIA Cosmos? List the containers, models, and collections related to it — I just want to see what's there before I dig in.",
+      "expected_output": "Fetches https://catalog.ngc.nvidia.com/sitemap.xml once, strips the orgs/0615409268808334/ test-org noise, greps the remaining URLs case-insensitively for 'cosmos'. Returns three buckets: containers under /containers/, models under /models/ (e.g. nvidia/teams/cosmos/models/cosmos-1.0-autoregressive-12b), and collections (e.g. nvidia/teams/cosmos/collections/cosmos). For each found container, also probes nvcr.io/v2/<repo>/tags/list with a fresh token and reports tag count + the freshest tag. For models/collections, flags URL-only coverage because deep file/sha metadata is NGC-API-key gated, and offers to fall back to nvidia-forums or the nvidia-cosmos sub-skill for community/docs context. If the user asks the same question about GR00T, returns 'no NGC entries match — GR00T is currently published only on HuggingFace' instead of fabricating paths.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I'm trying to figure out which arch (x86_64 vs arm64) a specific NGC container supports. Specifically: does nvcr.io/nvidia/isaac-sim:4.5.0 have an arm64 build, or is it x86 only?",
+      "expected_output": "Gets a token for nvidia/isaac-sim, fetches the manifests/4.5.0 endpoint with Accept header listing both manifest-list media types and the v2 manifest type. Detects whether the response mediaType is application/vnd.docker.distribution.manifest.list.v2+json (or the OCI index variant) — if so, enumerates manifests[].platform.architecture. If not, falls back to v1+prettyjws to read the top-level architecture field. Returns a clear yes/no per architecture, citing the registry path. If the tag is x86-only, suggests checking the tags/list output for any -arm64 or -aarch64 variants that may exist as separately-tagged single-arch images.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Can you check what NGC has published for NVIDIA Cosmos right now? I keep seeing different model names and want a current list.",
+      "expected_output": "Fetches the sitemap, filters /models/ and /containers/ paths for the substring 'cosmos' (case-insensitive), strips test-org noise. Returns the URL list grouped by resource type. For containers, fetches tags/list for each to enrich with tag counts + newest tag. For models, returns the catalog URLs and flags clearly that detailed model metadata (file lists, sizes, sha) requires an NGC API key — offers to route to nvidia-forums for community context on which Cosmos checkpoints are recommended for which task. Includes verification date.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "I tried to docker pull nvcr.io/nvidia/some-private-repo:latest and got 'unauthorized'. Is this NVAIE-gated or did I just type the path wrong?",
+      "expected_output": "Probes nvcr.io/proxy_auth?scope=repository:nvidia/some-private-repo:pull&service=nvcr.io. If proxy_auth itself returns errors[] (no token issued), explains that means the repo is NVAIE-entitled or otherwise private — anonymous tokens aren't granted for that scope. If proxy_auth returns a token but tags/list returns 404 NAME_UNKNOWN, explains the path is wrong and suggests using the sitemap to find the correct path. Either way, cites the catalog URL for the user to verify in browser and points at the NGC user guide for entitlement/key setup if it really is NVAIE.",
+      "files": []
+    }
+  ]
+}

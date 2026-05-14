@@ -1,11 +1,11 @@
 ---
 name: nvidia
-description: Meta-router over the NVIDIA Physical-AI stack — use whenever the user mentions OpenUSD / USD / `.usd` / `.usda` / `.usdc` / `.usdz`, NVIDIA Warp (`@wp.kernel`, GPU Python), Omniverse (Kit / ovrtx / ovphysx / XR / CloudXR / Vision Pro), Replicator (synthetic data generation), OmniGraph (Action / Push / AnimGraph), Isaac Sim (SimulationApp, URDF/MJCF import, sensors, cuMotion), Isaac Lab (RL/IL — rsl_rl / rl_games / skrl / sb3), Isaac ROS (CUDA-accelerated ROS 2 — cuVSLAM, Nvblox, FoundationPose, NITROS), Isaac GR00T (humanoid foundation models — N1 / N1.5 / Mimic), NVIDIA Cosmos (world foundation models), or the NVIDIA Developer Forums (community Q&A across every NVIDIA product — CUDA / TensorRT / Jetson / DRIVE). Routes to the right sub-skill. Trigger liberally — NVIDIA's ecosystem evolves monthly; always consult live docs or forum threads.
+description: Meta-router over the NVIDIA Physical-AI stack — use whenever the user mentions OpenUSD / USD / `.usd` / `.usda` / `.usdc` / `.usdz`, NVIDIA Warp (`@wp.kernel`, GPU Python), Omniverse (Kit / ovrtx / ovphysx / XR / CloudXR / Vision Pro), Replicator (synthetic data generation), OmniGraph (Action / Push / AnimGraph), Isaac Sim (SimulationApp, URDF/MJCF import, sensors, cuMotion), Isaac Lab (RL/IL — rsl_rl / rl_games / skrl / sb3), Isaac ROS (CUDA-accelerated ROS 2 — cuVSLAM, Nvblox, FoundationPose, NITROS), Isaac GR00T (humanoid foundation models — N1 / N1.5 / Mimic), NVIDIA Cosmos (world foundation models), the NVIDIA NGC Catalog (`catalog.ngc.nvidia.com` / `nvcr.io` — container tags, manifests, hosted models, `docker pull nvcr.io/...`), or the NVIDIA Developer Forums (community Q&A across every NVIDIA product — CUDA / TensorRT / Jetson / DRIVE). Routes to the right sub-skill. Trigger liberally — NVIDIA's ecosystem evolves monthly; always consult live docs, NGC tags, or forum threads.
 ---
 
 # NVIDIA Suite Docs — Meta Router
 
-Meta-router over the NVIDIA Physical-AI stack. Eleven sub-skills, each a standalone docs wrapper for one product. Use this skill to (a) figure out which sub-skill a user's question belongs to, (b) hand off multi-product questions, and (c) explain the hierarchy.
+Meta-router over the NVIDIA Physical-AI stack. Twelve sub-skills, each a standalone docs / catalog wrapper for one surface. Use this skill to (a) figure out which sub-skill a user's question belongs to, (b) hand off multi-product questions, and (c) explain the hierarchy.
 
 ## How to use sub-skills (read this first)
 
@@ -25,7 +25,7 @@ Read  <this-skill-path>/isaac-sim/references/retrieval-rule.md ← rewrite rule 
 Read  <this-skill-path>/isaac-sim/references/schema.md     ← Pattern B only (nvidia-forums has one)
 ```
 
-Each sub-skill directory has the same 3-4 file shape: `router.md` (the product-specific description, workflow, and pitfalls — a plain markdown reference file, NOT a registered skill), `references/live-sources.md`, `references/retrieval-rule.md`, and `references/schema.md` (Pattern B only). Once you've Read the sub-skill's `live-sources.md`, apply its retrieval rule and `WebFetch` the resulting URL.
+Each sub-skill directory has the same 3-4 file shape: `router.md` (the product-specific description, workflow, and pitfalls — a plain markdown reference file, NOT a registered skill), `references/live-sources.md`, `references/retrieval-rule.md`, and `references/schema.md` (only sub-skills that consume a structured response shape — `nvidia-forums` and `nvidia-ngc`). Once you've Read the sub-skill's `live-sources.md`, apply its retrieval rule (`WebFetch` for HTML/markdown patterns, `Bash` with `curl` for the structured Docker Registry v2 + Discourse JSON patterns).
 
 **Never guess URLs.** If the user's topic isn't covered in the sub-skill's `live-sources.md`, scrape the site's sidebar (per the sub-skill's `retrieval-rule.md`) or `WebSearch` for the canonical path. Do not fabricate URLs from training memory — the NVIDIA docs sites return 403 (not 404) for nonexistent paths, which makes dead-reckoning failures silent.
 
@@ -46,6 +46,7 @@ skills/nvidia/
 ├── isaac-ros/                  ← CUDA-accelerated ROS 2 packages
 ├── isaac-groot/                ← Humanoid foundation models
 ├── nvidia-cosmos/              ← World foundation models (generative)
+├── nvidia-ngc/                 ← NGC Catalog + nvcr.io Container Registry (containers / models / collections)
 └── nvidia-forums/              ← NVIDIA Developer Forums (community Q&A, Discourse JSON)
 ```
 
@@ -75,6 +76,7 @@ See `references/overview.md` for the full tree and the "parent skill owns the ge
 | ROS 2 / NITROS / cuVSLAM / Nvblox / MoveIt + cuMotion / FoundationPose / Isaac ROS packages | **isaac-ros** |
 | GR00T (N1 / N1.5 / Mimic / Dreams) / humanoid foundation models / retargeting | **isaac-groot** |
 | Cosmos / generative video / world foundation models / cosmos-predict / -transfer / -reason / -rl | **nvidia-cosmos** |
+| NGC / NGC Catalog / `catalog.ngc.nvidia.com` / `nvcr.io` / container tag lookup / "latest tag of X" / `docker pull nvcr.io/...` / hosted models on NGC / Helm charts / collections / NGC CLI / image labels (`com.nvidia.*`) | **nvidia-ngc** |
 | "forum" / "forums" / community post / thread / known issue / workaround / "has anyone solved" / NVIDIA staff reply / cross-product compatibility question that docs miss | **nvidia-forums** |
 
 ## Multi-product questions
@@ -88,6 +90,9 @@ When a user's question spans multiple sub-skills, consult each in sequence:
 - **"Write a Warp kernel that runs inside Isaac Lab"** → nvidia-warp (kernel) → isaac-lab (where it plugs in)
 - **"Can I use product A with product B?"** (cross-product compatibility, often poorly covered in official docs) → the matching product skills for docs coverage, PLUS nvidia-forums for community Q&A and staff clarifications
 - **"Is this a known issue / has anyone solved X?"** → nvidia-forums first, then the product skill for the current API / state
+- **"What container should I pull for X?"** → nvidia-ngc (current tag + manifest) → the matching product skill for usage docs
+- **"Is there a model checkpoint on NGC for X?"** → nvidia-ngc (sitemap-discovery) → the matching product skill for how to consume it (and `lerobot` if the dataset/checkpoint is mirrored on HuggingFace)
+- **"Why is my `docker pull` saying unauthorized?"** → nvidia-ngc (probe whether the repo is anonymous-pullable or NVAIE-gated) → nvidia-forums for community context
 
 ## The routing principle — "parent skill owns the general tool, product skill owns its wrapped surface"
 
@@ -110,8 +115,9 @@ So a question like "Replicator randomization for a Franka arm in Isaac Sim" rout
 | **A — raw markdown** (GitHub + HuggingFace) | isaac-groot · nvidia-cosmos |
 | **B — Discourse JSON API** | nvidia-forums |
 | **D — plain HTML** | openusd · nvidia-warp · isaac-sim · isaac-lab · isaac-ros |
+| **E — Docker Registry v2 + sitemap** (anonymous `nvcr.io` token flow) | nvidia-ngc |
 
-No sub-skill uses Pattern C (embedded JSON in HTML). Details per sub-skill live in each one's `references/retrieval-rule.md`. The only sub-skill with a `references/schema.md` is `nvidia-forums` (Pattern B requires one — see `nvidia-forums/references/schema.md` for the Discourse topic / search / category JSON structure).
+No sub-skill uses Pattern C (embedded JSON in HTML). Details per sub-skill live in each one's `references/retrieval-rule.md`. The two sub-skills with a `references/schema.md` file are the ones that consume structured response shapes: `nvidia-forums` (Discourse JSON — topic / search / category) and `nvidia-ngc` (Docker Registry v2 — token / tags / manifest v1+prettyjws + sitemap XML).
 
 ## Workflow
 
@@ -124,7 +130,7 @@ No sub-skill uses Pattern C (embedded JSON in HTML). Details per sub-skill live 
 ## Reference files
 
 - `references/overview.md` — the hierarchy, cross-skill relationships, and the general-vs-wrapped routing principle with examples.
-- Eleven sub-skills, each self-contained with its own `router.md` + `references/live-sources.md` + `references/retrieval-rule.md` + `evals/evals.json` (plus `references/schema.md` for the Pattern-B `nvidia-forums` sub-skill).
+- Twelve sub-skills, each self-contained with its own `router.md` + `references/live-sources.md` + `references/retrieval-rule.md` + `evals/evals.json` (plus `references/schema.md` for the two sub-skills that consume structured response shapes — `nvidia-forums` and `nvidia-ngc`).
 
 ## Common pitfalls
 
@@ -135,3 +141,6 @@ No sub-skill uses Pattern C (embedded JSON in HTML). Details per sub-skill live 
 - **GR00T training is on Isaac Lab, dataset format is LeRobotDataset.** For humanoid training questions, expect to hit isaac-groot + isaac-lab + `lerobot` (sibling skill in robodocs).
 - **Cosmos is generative; Omniverse Replicator is deterministic.** Both produce training data, but through different mechanisms.
 - **Warp is not Omniverse-specific.** Don't route Warp questions to omniverse-kit — they go to nvidia-warp.
+- **`catalog.ngc.nvidia.com` ≠ `nvcr.io`.** The first is the browse UI (Next.js CSR — HTML is uninspectable); the second is the Container Registry (Docker Registry v2 — anonymous-queryable). When a user asks "what's on NGC", route to `nvidia-ngc` and use the registry, not WebFetch against the catalog HTML.
+- **NGC container tags drift weekly.** A docs page saying "use `nvcr.io/nvidia/isaac-sim:4.5.0`" can be stale within days. For "what's the latest" questions, route to `nvidia-ngc` to probe the registry — don't quote tag names from product docs.
+- **NGC hosted models are NOT Docker images.** They live behind `api.ngc.nvidia.com/v2/...` which is auth-gated. The `nvidia-ngc` sub-skill can only discover their URLs via the sitemap; the deep metadata needs an NGC API key. Be honest with the user when this gap kicks in.

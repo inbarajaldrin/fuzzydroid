@@ -7,12 +7,11 @@ Live-fetched documentation skills for the robotics stack — bundled inside the
 
 | Skill | Triggers on | Source |
 |---|---|---|
-| `robodocs:lerobot` | HuggingFace LeRobot — policies (ACT, SmolVLA, Pi0, Diffusion, HIL-SERL), datasets (LeRobotDataset v3), supported hardware (SO-100/101, Koch, LeKiwi, Reachy2, Unitree G1, ...) | `huggingface.co/docs/lerobot` (Pattern A — `.md` suffix) |
-| `robodocs:nvidia` | NVIDIA Physical-AI suite — Isaac Sim / Lab / ROS, GR00T, Cosmos, Warp, Omniverse (Kit / Replicator / OmniGraph), OpenUSD, NVIDIA Developer Forums | Per-product live fetch (Patterns A, B, D) |
+| `robodocs:lerobot` | HuggingFace LeRobot — policies (ACT, SmolVLA, Pi0, Diffusion, HIL-SERL), datasets (LeRobotDataset v3), supported hardware (SO-100/101, Koch, LeKiwi, Reachy2, Unitree G1, ...) | `huggingface.co/docs/lerobot` |
+| `robodocs:nvidia` | NVIDIA Physical-AI suite — Isaac Sim / Lab / ROS, GR00T, Cosmos, Warp, Omniverse (Kit / Replicator / OmniGraph), OpenUSD, NGC Catalog (`catalog.ngc.nvidia.com` / `nvcr.io`), NVIDIA Developer Forums | Per-product live fetch across NVIDIA + Pixar docs sites |
+| `robodocs:mujoco` | MuJoCo physics simulator — MJCF / mjModel / C++ + Python APIs, MJX (JAX/XLA backend), MJWarp / MuJoCo Warp (NVIDIA GPU backend), Menagerie (model zoo), Playground (RL envs), MPC (predictive control), dm_control, GitHub Discussions | `mujoco.readthedocs.io` + `github.com/google-deepmind/mujoco*` |
 
-The `nvidia` skill is a meta-router over 11 product sub-skills (each its own
-`router.md` + curated URL catalog) — it dispatches the user's question to the
-right product surface and applies the correct retrieval rule.
+The `nvidia` skill is a meta-router over **twelve product surfaces** — Isaac Sim, Isaac Lab, Isaac ROS, Isaac GR00T, Cosmos, Warp, OpenUSD, Omniverse (Kit / Replicator / OmniGraph), NGC Catalog, and Developer Forums.
 
 ## Install
 
