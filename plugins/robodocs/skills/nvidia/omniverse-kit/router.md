@@ -31,14 +31,14 @@ Rule: **strip nothing; append `.md` to the `.html` URL**. Trailing `/` paths don
 ## Workflow
 
 1. Identify whether the question is about: Kit runtime / app shell, a specific Kit extension (`omni.kit.*`), Carbonite (`carb.*`), extension authoring, the `.kit` app manifest, or the unbundled libraries.
-2. Look up the starting URL in `shared/live-sources.md`. For individual `carb.*` / `omni.*` classes not listed, apply the rewrite to any valid `.html` path from the Kit manual sidebar.
+2. Look up the starting URL in `references/live-sources.md`. For individual `carb.*` / `omni.*` classes not listed, apply the rewrite to any valid `.html` path from the Kit manual sidebar.
 3. `WebFetch` the `.html.md` URL; fall back to `.html` if `.md` returns 403.
 4. Cite the HTML URL back to the user (not the `.md` URL).
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points grouped by Kit Manual · Carbonite · Extension Authoring · Unbundled Libraries · Kit Apps.
-- `shared/retrieval-rule.md` — full rewrite rule, 403 fallback, probe commands, verification date.
+- `references/live-sources.md` — curated entry points grouped by Kit Manual · Carbonite · Extension Authoring · Unbundled Libraries · Kit Apps.
+- `references/retrieval-rule.md` — full rewrite rule, 403 fallback, probe commands, verification date.
 
 ## Common pitfalls
 

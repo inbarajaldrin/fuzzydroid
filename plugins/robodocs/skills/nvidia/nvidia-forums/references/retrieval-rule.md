@@ -28,7 +28,7 @@ Pattern B — **Discourse JSON API**. Append `.json` to any forum URL and Discou
 
 ## Schema
 
-See `shared/schema.md` for the full Discourse JSON schema — topic, post_stream, search response, category listing.
+See `references/schema.md` for the full Discourse JSON schema — topic, post_stream, search response, category listing.
 
 ## Versioning / freshness
 

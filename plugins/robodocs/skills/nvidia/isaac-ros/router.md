@@ -29,7 +29,7 @@ Pattern D — **plain HTML, WebFetch the URL directly.** GitHub Pages serves the
 ## Workflow
 
 1. Classify — which capability? Perception (detection / segmentation / pose / stereo), SLAM / localization (cuVSLAM / cuVGL), mapping (Nvblox), manipulation (cuMotion + MoveIt, isaac_grasp, pick_and_place), transport (NITROS), cloud control (Mission Client / Dispatch), or DNN inference (TensorRT / Triton).
-2. Look up in `shared/live-sources.md`. Each capability usually has an `index.html` overview + per-model / per-sensor tutorials.
+2. Look up in `references/live-sources.md`. Each capability usually has an `index.html` overview + per-model / per-sensor tutorials.
 3. `WebFetch` the HTML URL directly.
 4. For Isaac Sim testing of an Isaac ROS package, use the `tutorial_isaac_sim.html` page for that capability (common across perception/SLAM/mapping docs).
 5. If the user is asking about robot simulation (not ROS-deploy), route to `isaac-sim`.
@@ -37,8 +37,8 @@ Pattern D — **plain HTML, WebFetch the URL directly.** GitHub Pages serves the
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points: Getting Started · Perception (detection / segmentation / pose / stereo / fiducials) · SLAM & Localization · Scene Reconstruction (Nvblox) · Manipulation (cuMotion + MoveIt) · NITROS Transport · DNN Inference · Cloud Control · Isaac Sim Integration · Getting Started on Jetson.
-- `shared/retrieval-rule.md` — Pattern D rule + verification.
+- `references/live-sources.md` — curated entry points: Getting Started · Perception (detection / segmentation / pose / stereo / fiducials) · SLAM & Localization · Scene Reconstruction (Nvblox) · Manipulation (cuMotion + MoveIt) · NITROS Transport · DNN Inference · Cloud Control · Isaac Sim Integration · Getting Started on Jetson.
+- `references/retrieval-rule.md` — Pattern D rule + verification.
 
 ## Common pitfalls
 

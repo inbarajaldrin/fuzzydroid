@@ -61,7 +61,7 @@ Every general tool has a parent skill. Every product that re-exposes that tool i
 | **B — Discourse JSON API** | Append `.json` to any forum URL; get structured topic / search / category data | `nvidia-forums` |
 | **D — plain HTML** | WebFetch the HTML URL directly (Sphinx / custom server-rendered) | `openusd`, `nvidia-warp`, `isaac-sim`, `isaac-lab`, `isaac-ros` |
 
-**No sub-skill uses Pattern C (embedded JSON in HTML).** Only `nvidia-forums` is Pattern B — it's the only skill with a `shared/schema.md` file documenting the structured response shape. Each sub-skill's `shared/retrieval-rule.md` documents verified probe commands and the rewrite rule specific to its source.
+**No sub-skill uses Pattern C (embedded JSON in HTML).** Only `nvidia-forums` is Pattern B — it's the only skill with a `references/schema.md` file documenting the structured response shape. Each sub-skill's `references/retrieval-rule.md` documents verified probe commands and the rewrite rule specific to its source.
 
 ## Why two peer-platform docs sites behave differently
 

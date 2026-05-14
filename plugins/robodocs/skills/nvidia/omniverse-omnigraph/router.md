@@ -29,15 +29,15 @@ Pattern A — **append `.md` to any `.html` URL**, with HTML fallback for the `/
 ## Workflow
 
 1. Classify — is it conceptual (what's OmniGraph), authoring (write a node), Action vs Push distinction, AnimGraph (character anim layer), node-library lookup (specific node semantics), or the Python API (`omni.graph.core`)?
-2. Look up in `shared/live-sources.md`. For a specific node, construct the URL: `https://docs.omniverse.nvidia.com/extensions/latest/ext_omnigraph/node-library/nodes/<group>/<node-name>-<version>.html`. When the group / version isn't known, fall back to the `node-library/node-library.html` index.
+2. Look up in `references/live-sources.md`. For a specific node, construct the URL: `https://docs.omniverse.nvidia.com/extensions/latest/ext_omnigraph/node-library/nodes/<group>/<node-name>-<version>.html`. When the group / version isn't known, fall back to the `node-library/node-library.html` index.
 3. `WebFetch` `.html.md` first; HTML fallback on 403.
 4. If the user is in Isaac Sim asking about robot-specific OG nodes (differential controllers, ROS bridge) — route to the `isaac-sim` skill.
 5. Cite the HTML URL back.
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points: Concepts · Graph Types (Action / Push) · Node Authoring · Python API · AnimGraph · Node Library Index.
-- `shared/retrieval-rule.md` — rewrite rule, 403 fallback list, probe commands.
+- `references/live-sources.md` — curated entry points: Concepts · Graph Types (Action / Push) · Node Authoring · Python API · AnimGraph · Node Library Index.
+- `references/retrieval-rule.md` — rewrite rule, 403 fallback list, probe commands.
 
 ## Common pitfalls
 

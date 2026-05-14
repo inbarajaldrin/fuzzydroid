@@ -10,7 +10,7 @@
     {
       "id": 2,
       "prompt": "What's the actual relationship between NVIDIA Omniverse and NVIDIA Isaac Sim? I keep seeing Isaac Sim described as 'built on Omniverse' but also as a separate product.",
-      "expected_output": "Reads shared/overview.md and explains: Isaac Sim is a Kit app (so technically built on Omniverse's Kit framework), BUT Isaac is a peer product line with its own developer portal and GitHub org (isaac-sim/*). Isaac Lab 3.0 is moving off monolithic Kit onto standalone Omniverse libraries (ovrtx/ovphysx/ovstorage). 'Uses Omniverse components, markets as separate platform' is the accurate framing. Cites the overview + Omniverse and Isaac developer portals.",
+      "expected_output": "Reads references/overview.md and explains: Isaac Sim is a Kit app (so technically built on Omniverse's Kit framework), BUT Isaac is a peer product line with its own developer portal and GitHub org (isaac-sim/*). Isaac Lab 3.0 is moving off monolithic Kit onto standalone Omniverse libraries (ovrtx/ovphysx/ovstorage). 'Uses Omniverse components, markets as separate platform' is the accurate framing. Cites the overview + Omniverse and Isaac developer portals.",
       "files": []
     },
     {

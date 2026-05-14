@@ -28,15 +28,15 @@ Pattern A — **append `.md` to any `.html` URL** under `docs.omniverse.nvidia.c
 ## Workflow
 
 1. Classify the question — conceptual (what is Replicator, how does randomization work), practical (write a randomizer / custom writer), annotator-specific (which annotator for which label type), or integration (run headless / containerized / AWS).
-2. Look up the starting URL in `shared/live-sources.md`.
+2. Look up the starting URL in `references/live-sources.md`.
 3. `WebFetch` the `.html.md` URL; fall back to `.html` if 403.
 4. If the user is inside Isaac Sim, route them to the `isaac-sim` skill for `isaacsim.replicator.*` — that's the robot-aware wrapper, not raw Replicator.
 5. Cite the HTML URL back to the user.
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points: Getting Started · Randomizers · Annotators · Writers · YAML workflow · Advanced (headless, physics, container, AWS) · Examples.
-- `shared/retrieval-rule.md` — rewrite rule, 403 fallback, verification date.
+- `references/live-sources.md` — curated entry points: Getting Started · Randomizers · Annotators · Writers · YAML workflow · Advanced (headless, physics, container, AWS) · Examples.
+- `references/retrieval-rule.md` — rewrite rule, 403 fallback, verification date.
 
 ## Common pitfalls
 

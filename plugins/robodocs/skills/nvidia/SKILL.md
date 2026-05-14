@@ -1,6 +1,6 @@
 ---
 name: nvidia
-description: Meta-router over the NVIDIA Physical-AI stack — use whenever the user mentions OpenUSD / USD / `.usd` / `.usda` / `.usdc` / `.usdz`, NVIDIA Warp (`@wp.kernel`, GPU Python), Omniverse (Kit / extensions / ovrtx / ovphysx / ovstorage / XR / CloudXR / Vision Pro), Replicator (synthetic data generation), OmniGraph (Action Graph / Push Graph / AnimGraph), Isaac Sim (robotics simulator, SimulationApp, URDF/MJCF import, sensors, controllers, cuMotion), Isaac Lab (RL/IL training on Sim — rsl_rl / rl_games / skrl / sb3, Manager-Based vs Direct), Isaac ROS (CUDA-accelerated ROS 2 — cuVSLAM, Nvblox, cuMotion + MoveIt, FoundationPose, NITROS), Isaac GR00T (humanoid foundation models — N1 / N1.5 / Mimic / Dreams), NVIDIA Cosmos (world foundation models — predict / transfer / reason / rl), or the **NVIDIA Developer Forums** (community Q&A, staff replies, known issues, workarounds across every NVIDIA product — CUDA / TensorRT / Jetson / DRIVE / DeepStream too). Routes the question to the right sub-skill based on domain. Also triggers on cross-cutting questions that span multiple pieces (e.g. "sim-to-real with NVIDIA stack", "robotics training end-to-end", "Omniverse vs Isaac Sim difference") or "what are people on the forums saying about X" / "has anyone solved X". Trigger liberally — NVIDIA's robotics + 3D ecosystem evolves monthly; always consult live docs or forum threads before answering.
+description: Meta-router over the NVIDIA Physical-AI stack — use whenever the user mentions OpenUSD / USD / `.usd` / `.usda` / `.usdc` / `.usdz`, NVIDIA Warp (`@wp.kernel`, GPU Python), Omniverse (Kit / ovrtx / ovphysx / XR / CloudXR / Vision Pro), Replicator (synthetic data generation), OmniGraph (Action / Push / AnimGraph), Isaac Sim (SimulationApp, URDF/MJCF import, sensors, cuMotion), Isaac Lab (RL/IL — rsl_rl / rl_games / skrl / sb3), Isaac ROS (CUDA-accelerated ROS 2 — cuVSLAM, Nvblox, FoundationPose, NITROS), Isaac GR00T (humanoid foundation models — N1 / N1.5 / Mimic), NVIDIA Cosmos (world foundation models), or the NVIDIA Developer Forums (community Q&A across every NVIDIA product — CUDA / TensorRT / Jetson / DRIVE). Routes to the right sub-skill. Trigger liberally — NVIDIA's ecosystem evolves monthly; always consult live docs or forum threads.
 ---
 
 # NVIDIA Suite Docs — Meta Router
@@ -20,12 +20,12 @@ Skill(isaac-sim)                   ← ✗ Returns "Unknown skill"
 
 ```
 Read  <this-skill-path>/isaac-sim/router.md            ← sub-skill's description + workflow
-Read  <this-skill-path>/isaac-sim/shared/live-sources.md   ← curated URL catalog
-Read  <this-skill-path>/isaac-sim/shared/retrieval-rule.md ← rewrite rule (Pattern A/B/C/D)
-Read  <this-skill-path>/isaac-sim/shared/schema.md     ← Pattern B only (nvidia-forums has one)
+Read  <this-skill-path>/isaac-sim/references/live-sources.md   ← curated URL catalog
+Read  <this-skill-path>/isaac-sim/references/retrieval-rule.md ← rewrite rule (Pattern A/B/C/D)
+Read  <this-skill-path>/isaac-sim/references/schema.md     ← Pattern B only (nvidia-forums has one)
 ```
 
-Each sub-skill directory has the same 3-4 file shape: `router.md` (the product-specific description, workflow, and pitfalls — a plain markdown reference file, NOT a registered skill), `shared/live-sources.md`, `shared/retrieval-rule.md`, and `shared/schema.md` (Pattern B only). Once you've Read the sub-skill's `live-sources.md`, apply its retrieval rule and `WebFetch` the resulting URL.
+Each sub-skill directory has the same 3-4 file shape: `router.md` (the product-specific description, workflow, and pitfalls — a plain markdown reference file, NOT a registered skill), `references/live-sources.md`, `references/retrieval-rule.md`, and `references/schema.md` (Pattern B only). Once you've Read the sub-skill's `live-sources.md`, apply its retrieval rule and `WebFetch` the resulting URL.
 
 **Never guess URLs.** If the user's topic isn't covered in the sub-skill's `live-sources.md`, scrape the site's sidebar (per the sub-skill's `retrieval-rule.md`) or `WebSearch` for the canonical path. Do not fabricate URLs from training memory — the NVIDIA docs sites return 403 (not 404) for nonexistent paths, which makes dead-reckoning failures silent.
 
@@ -34,7 +34,7 @@ Each sub-skill directory has the same 3-4 file shape: `router.md` (the product-s
 ```
 skills/nvidia/
 ├── SKILL.md                    ← you are here
-├── shared/
+├── references/
 │   └── overview.md             ← the hierarchy + routing principle
 ├── openusd/                    ← Pixar USD (foundation, not NVIDIA-owned)
 ├── nvidia-warp/                ← GPU Python framework (standalone)
@@ -59,7 +59,7 @@ Three peer platforms, with OpenUSD underneath and Warp off to the side:
 - **NVIDIA Cosmos** — generative world models. Peer to Omniverse.
 - **NVIDIA Warp** — standalone GPU Python framework. Used by Omniverse (as extension), Isaac Lab (reward / observation kernels), and many non-NVIDIA projects.
 
-See `shared/overview.md` for the full tree and the "parent skill owns the general tool, product skill owns its wrapped surface" routing principle.
+See `references/overview.md` for the full tree and the "parent skill owns the general tool, product skill owns its wrapped surface" routing principle.
 
 ## Routing table — pick the right sub-skill
 
@@ -111,20 +111,20 @@ So a question like "Replicator randomization for a Franka arm in Isaac Sim" rout
 | **B — Discourse JSON API** | nvidia-forums |
 | **D — plain HTML** | openusd · nvidia-warp · isaac-sim · isaac-lab · isaac-ros |
 
-No sub-skill uses Pattern C (embedded JSON in HTML). Details per sub-skill live in each one's `shared/retrieval-rule.md`. The only sub-skill with a `shared/schema.md` is `nvidia-forums` (Pattern B requires one — see `nvidia-forums/shared/schema.md` for the Discourse topic / search / category JSON structure).
+No sub-skill uses Pattern C (embedded JSON in HTML). Details per sub-skill live in each one's `references/retrieval-rule.md`. The only sub-skill with a `references/schema.md` is `nvidia-forums` (Pattern B requires one — see `nvidia-forums/references/schema.md` for the Discourse topic / search / category JSON structure).
 
 ## Workflow
 
 1. Parse the user's question for domain keywords (see routing table above).
-2. If it's single-domain: `Read` the matching sub-skill's `router.md`, then `Read` its `shared/live-sources.md`, apply the retrieval rule, `WebFetch` the URL. Do NOT use `Skill(...:...)` syntax — see "How to use sub-skills" above.
+2. If it's single-domain: `Read` the matching sub-skill's `router.md`, then `Read` its `references/live-sources.md`, apply the retrieval rule, `WebFetch` the URL. Do NOT use `Skill(...:...)` syntax — see "How to use sub-skills" above.
 3. If it's multi-product, step through sub-skills in logical order (from general → specific, or training → sim → deploy) — reading each sub-skill's files as you go.
-4. If the question is about the **relationship** between products ("what's the difference between Omniverse and Isaac Sim?"), answer from `shared/overview.md` directly without fetching.
+4. If the question is about the **relationship** between products ("what's the difference between Omniverse and Isaac Sim?"), answer from `references/overview.md` directly without fetching.
 5. Cite the HTML URL of the source, per each sub-skill's convention.
 
 ## Reference files
 
-- `shared/overview.md` — the hierarchy, cross-skill relationships, and the general-vs-wrapped routing principle with examples.
-- Eleven sub-skills, each self-contained with its own `router.md` + `shared/live-sources.md` + `shared/retrieval-rule.md` + `evals/evals.json` (plus `shared/schema.md` for the Pattern-B `nvidia-forums` sub-skill).
+- `references/overview.md` — the hierarchy, cross-skill relationships, and the general-vs-wrapped routing principle with examples.
+- Eleven sub-skills, each self-contained with its own `router.md` + `references/live-sources.md` + `references/retrieval-rule.md` + `evals/evals.json` (plus `references/schema.md` for the Pattern-B `nvidia-forums` sub-skill).
 
 ## Common pitfalls
 

@@ -29,7 +29,7 @@ Pattern D — **plain HTML, WebFetch the URL directly.** `isaac-sim.github.io/Is
 ## Workflow
 
 1. Classify — installation / setup, workflow choice (Manager-Based vs Direct), RL lib (rsl_rl / rl_games / skrl / sb3), task / env authoring, sensor / actuator config, multi-GPU or cluster training, imitation-learning (Mimic), teleop (CloudXR / Haply), or Newton experimental integration.
-2. Look up in `shared/live-sources.md`. For specific `isaaclab.*` APIs, go to `source/api/lab/isaaclab.<module>.html`.
+2. Look up in `references/live-sources.md`. For specific `isaaclab.*` APIs, go to `source/api/lab/isaaclab.<module>.html`.
 3. `WebFetch` the HTML URL directly.
 4. If the user asks about simulator basics (SimulationApp, URDF import) — route to `isaac-sim`.
 5. If the user asks about custom Warp kernels — route to `nvidia-warp`.
@@ -38,8 +38,8 @@ Pattern D — **plain HTML, WebFetch the URL directly.** `isaac-sim.github.io/Is
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points across Setup · Tutorials · Workflows (Manager / Direct) · RL Libraries · Mimic & Imitation · Features (Hydra / multi-GPU / PBT / Ray) · How-To · Deployment · API Reference · Newton (experimental).
-- `shared/retrieval-rule.md` — Pattern D rule, verification, versioning.
+- `references/live-sources.md` — curated entry points across Setup · Tutorials · Workflows (Manager / Direct) · RL Libraries · Mimic & Imitation · Features (Hydra / multi-GPU / PBT / Ray) · How-To · Deployment · API Reference · Newton (experimental).
+- `references/retrieval-rule.md` — Pattern D rule, verification, versioning.
 
 ## Common pitfalls
 

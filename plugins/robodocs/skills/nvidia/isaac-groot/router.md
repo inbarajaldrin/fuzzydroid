@@ -39,7 +39,7 @@ Rule: **use `raw.githubusercontent.com` for GitHub** (returns clean markdown); f
 ## Workflow
 
 1. Classify — overview / getting-started (README), fine-tuning (README + getting_started notebooks), model detail (HF model card), deployment (repo scripts), dataset format (LeRobot-compatible — cross-ref `lerobot` skill).
-2. Look up in `shared/live-sources.md`.
+2. Look up in `references/live-sources.md`.
 3. Fetch the raw markdown URL directly.
 4. For notebook content, fetch the raw `.ipynb` and note that cells / outputs come through as JSON — ask a tight extraction prompt.
 5. If the user asks about dataset format (LeRobotDataset v3) → cross-ref `lerobot`.
@@ -48,8 +48,8 @@ Rule: **use `raw.githubusercontent.com` for GitHub** (returns clean markdown); f
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points: Repo root (README, FAQ) · Model Cards (HF) · Getting Started Notebooks · Developer Portal · Technical Blog.
-- `shared/retrieval-rule.md` — rewrite rule, GitHub vs HF vs portal differences.
+- `references/live-sources.md` — curated entry points: Repo root (README, FAQ) · Model Cards (HF) · Getting Started Notebooks · Developer Portal · Technical Blog.
+- `references/retrieval-rule.md` — rewrite rule, GitHub vs HF vs portal differences.
 
 ## Common pitfalls
 

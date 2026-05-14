@@ -32,15 +32,15 @@ No URL rewrite needed.
 ## Workflow
 
 1. Identify the topic — kernel basics, a specific built-in family (math / geometry / volume / tile), autograd, interop, a domain module (sim / fem / sparse / render), or a debug/profiling concern.
-2. Look up the starting URL in `shared/live-sources.md`. Page structure is `user_guide/` (concepts), `language_reference/builtins.html` (function catalog), `api_reference/` (module APIs), `domain_modules/` (sim/fem/sparse/render), `deep_dive/` (allocators, codegen, concurrency, profiling).
+2. Look up the starting URL in `references/live-sources.md`. Page structure is `user_guide/` (concepts), `language_reference/builtins.html` (function catalog), `api_reference/` (module APIs), `domain_modules/` (sim/fem/sparse/render), `deep_dive/` (allocators, codegen, concurrency, profiling).
 3. `WebFetch` the URL with an extraction prompt that names the concept or anchor.
 4. For built-in functions, use the anchored form: `language_reference/builtins.html#vector-math`, `#quaternion-math`, `#geometry`, `#volumes`, `#tile-primitives`, etc.
 5. Cite the HTML URL back to the user.
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points grouped by User Guide · Language Reference · API Reference · Domain Modules · Deep Dive.
-- `shared/retrieval-rule.md` — Pattern D rule, probe commands, verification date.
+- `references/live-sources.md` — curated entry points grouped by User Guide · Language Reference · API Reference · Domain Modules · Deep Dive.
+- `references/retrieval-rule.md` — Pattern D rule, probe commands, verification date.
 
 ## Common pitfalls
 

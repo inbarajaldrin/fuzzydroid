@@ -30,7 +30,7 @@ Pattern D — **plain HTML, WebFetch the URL directly.** The site is Sphinx-rend
 ## Workflow
 
 1. Classify — installation / getting-started, Python-scripting (Standalone vs Script Editor vs Extension), robot import (URDF / MJCF / USD), sensors, controllers, motion planning (cuMotion / Lula / RMPflow), synthetic data (isaacsim.replicator wrapper), ROS 2 bridge, Isaac Lab integration, digital twin, or API reference.
-2. Look up in `shared/live-sources.md`. For specific Python APIs in `isaacsim.*`, start at `reference_python_api.html` and drill in.
+2. Look up in `references/live-sources.md`. For specific Python APIs in `isaacsim.*`, start at `reference_python_api.html` and drill in.
 3. `WebFetch` the HTML URL directly.
 4. If the user asks about RL training — route to `isaac-lab` skill.
 5. If the user asks about on-robot ROS 2 deploy — route to `isaac-ros` skill.
@@ -39,8 +39,8 @@ Pattern D — **plain HTML, WebFetch the URL directly.** The site is Sphinx-rend
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points across Installation · Quick Start · Python Scripting · Robot Simulation (robots, sensors, controllers, cuMotion) · Synthetic Data (Isaac wrapper) · ROS 2 Bridge · Isaac Lab Integration · Cortex · Digital Twin · API Reference · GUI / Tools · Assets.
-- `shared/retrieval-rule.md` — Pattern D rule, verification date, version strategy.
+- `references/live-sources.md` — curated entry points across Installation · Quick Start · Python Scripting · Robot Simulation (robots, sensors, controllers, cuMotion) · Synthetic Data (Isaac wrapper) · ROS 2 Bridge · Isaac Lab Integration · Cortex · Digital Twin · API Reference · GUI / Tools · Assets.
+- `references/retrieval-rule.md` — Pattern D rule, verification date, version strategy.
 
 ## Common pitfalls
 

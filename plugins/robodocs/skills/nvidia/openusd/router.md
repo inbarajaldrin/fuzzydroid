@@ -30,15 +30,15 @@ No URL rewrite needed. If a user references a specific openusd.org page, fetch i
 ## Workflow
 
 1. Identify the topic — composition, schemas, a specific tutorial, file format, toolset, performance, etc.
-2. Look up the starting URL in `shared/live-sources.md`. If it's not listed, scrape the sidebar of any rendered page (`curl | grep href`) to find the slug.
+2. Look up the starting URL in `references/live-sources.md`. If it's not listed, scrape the sidebar of any rendered page (`curl | grep href`) to find the slug.
 3. `WebFetch` the URL directly with a specific extraction prompt (name the section, anchor, or concept).
 4. If you land on a Doxygen API page and the user's question is conceptual, swap to the sibling user-guide or tutorial page — don't try to summarize thousands of auto-generated symbols.
 5. Cite the HTML URL back to the user so they can open it in a browser.
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points grouped by topic (Get Started · Core Concepts · Tutorials · User Guides · Schemas · Toolset · File Formats · Composition · Performance · API).
-- `shared/retrieval-rule.md` — full Pattern D rule, probe commands, and verification date.
+- `references/live-sources.md` — curated entry points grouped by topic (Get Started · Core Concepts · Tutorials · User Guides · Schemas · Toolset · File Formats · Composition · Performance · API).
+- `references/retrieval-rule.md` — full Pattern D rule, probe commands, and verification date.
 
 ## Common pitfalls
 

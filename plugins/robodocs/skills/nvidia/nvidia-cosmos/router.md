@@ -41,7 +41,7 @@ Use `raw.githubusercontent.com` for any repo file; use `huggingface.co/.../raw/m
 ## Workflow
 
 1. Identify the task — prediction / transfer / reasoning / RL / curation / cookbook / eval.
-2. Pick the matching repo in `shared/live-sources.md`. If unsure, fetch the org listing via HTML scrape.
+2. Pick the matching repo in `references/live-sources.md`. If unsure, fetch the org listing via HTML scrape.
 3. Fetch the raw README from `raw.githubusercontent.com/nvidia-cosmos/<repo>/main/README.md`.
 4. For model-specific details, follow to the HF model card linked in the README.
 5. For end-to-end recipes, go to `cosmos-cookbook`.
@@ -49,8 +49,8 @@ Use `raw.githubusercontent.com` for any repo file; use `huggingface.co/.../raw/m
 
 ## Reference files
 
-- `shared/live-sources.md` — curated entry points per repo in the `nvidia-cosmos` org + key HF model cards + main product page.
-- `shared/retrieval-rule.md` — rewrite rules for the multi-repo layout.
+- `references/live-sources.md` — curated entry points per repo in the `nvidia-cosmos` org + key HF model cards + main product page.
+- `references/retrieval-rule.md` — rewrite rules for the multi-repo layout.
 
 ## Common pitfalls
 

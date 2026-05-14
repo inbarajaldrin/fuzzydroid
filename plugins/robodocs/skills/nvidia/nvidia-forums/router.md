@@ -22,7 +22,7 @@ Pattern B — **Discourse JSON API**. Every HTML URL on `forums.developer.nvidia
 | `/categories` | `/categories.json` |
 | `/search?q=<query>` | `/search.json?q=<query>` |
 
-Rule: **append `.json`** to any forum URL. No path rewrite needed (unlike Apple's insert-before-path rule). Discourse serves `application/json` with a well-documented schema — see `shared/schema.md`.
+Rule: **append `.json`** to any forum URL. No path rewrite needed (unlike Apple's insert-before-path rule). Discourse serves `application/json` with a well-documented schema — see `references/schema.md`.
 
 ## HTML exceptions
 
@@ -35,15 +35,15 @@ Rule: **append `.json`** to any forum URL. No path rewrite needed (unlike Apple'
 1. Classify the question — is it a known-thread lookup, a product category browse, a cross-product compatibility question, or a search across multiple products?
 2. **For a search**: hit `/search.json?q=<query>` first. It returns a `topics[]` and `posts[]` array; grab the top matches' IDs and fetch topic JSON.
 3. **For a specific thread the user mentions**: fetch `/t/<slug>/<id>.json` directly.
-4. **For "what's happening in category X"**: fetch `/c/<path>/<cat-id>.json?page=0`. See `shared/live-sources.md` for the category catalog.
+4. **For "what's happening in category X"**: fetch `/c/<path>/<cat-id>.json?page=0`. See `references/live-sources.md` for the category catalog.
 5. Extract the user's original question from `post_stream.posts[0].cooked`, NVIDIA staff answers by filtering posts where `user_title` or `moderator: true`, and the resolution from the last post or a post marked as solution.
 6. Cite the **HTML URL** (`/t/<slug>/<id>`) back to the user, optionally with the post anchor (`#post_<N>`).
 
 ## Reference files
 
-- `shared/live-sources.md` — category catalog (Omniverse / Isaac / Robotics / AV / AI-DS / Developer Tools + IDs) and search-first workflow.
-- `shared/retrieval-rule.md` — full Discourse `.json` rule, rate-limit notes, verification commands.
-- `shared/schema.md` — **Discourse JSON schema** (topic, post_stream, search response) with extraction patterns — the only schema file in the suite because this is the only Pattern B skill.
+- `references/live-sources.md` — category catalog (Omniverse / Isaac / Robotics / AV / AI-DS / Developer Tools + IDs) and search-first workflow.
+- `references/retrieval-rule.md` — full Discourse `.json` rule, rate-limit notes, verification commands.
+- `references/schema.md` — **Discourse JSON schema** (topic, post_stream, search response) with extraction patterns — the only schema file in the suite because this is the only Pattern B skill.
 
 ## Common pitfalls
 
