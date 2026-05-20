@@ -24,7 +24,7 @@ Run this via the Bash tool:
 ```bash
 CLAUDE_PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT}" \
   uv run --python 3.11 \
-    --with-editable "${CLAUDE_PLUGIN_ROOT}/../../shared/fuzzydroid" \
+    --with-editable "${CLAUDE_PLUGIN_ROOT}/shared/fuzzydroid" \
     python -m fuzzydroid.fusion.doctor
 ```
 

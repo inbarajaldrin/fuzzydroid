@@ -24,7 +24,7 @@ Minimum required fields:
 |---|---|---|
 | `venv_path` | string | Absolute path to the shared fuzzydroid venv |
 | `plugin_version` | string | Plugin version at time of last setup |
-| `pyproject_hash` | string | SHA-256 of `shared/fuzzydroid/pyproject.toml` at last setup |
+| `pyproject_hash` | string | SHA-256 of the plugin's bundled `shared/fuzzydroid/pyproject.toml` at last setup |
 | `install_timestamp` | string (ISO-8601) | When setup last ran |
 | `python_version` | string | Python version used to create the venv |
 
@@ -41,7 +41,9 @@ The first plugin whose `/setup` command runs creates the venv with `uv venv <pat
 
 ## 4. Python code layout (required)
 
-A plugin's Python code lives at `shared/fuzzydroid/fuzzydroid/<name>/` in the monorepo. Inside the `fuzzydroid` namespace package, each plugin is a subpackage imported as `fuzzydroid.<name>`.
+A plugin's Python code lives at `plugins/<name>/shared/fuzzydroid/fuzzydroid/<name>/` — **bundled inside the plugin directory**. This is required so that the marketplace install (which only ships the `plugins/<name>/` subtree) includes the Python code. The single canonical install path at runtime is `${CLAUDE_PLUGIN_ROOT}/shared/fuzzydroid`, identical for dev and marketplace installs.
+
+Inside the `fuzzydroid` namespace package, each plugin is a subpackage imported as `fuzzydroid.<name>`. When multiple plugins are installed they share one venv; each plugin's editable install contributes its own `fuzzydroid.<name>` subpackage via namespace-package semantics.
 
 Plugin-specific scripts that must be run as files rather than imports (e.g., Fusion scripts executed via `fusion_exec_python`) live in `plugins/<name>/scripts/`.
 
@@ -76,9 +78,9 @@ A plugin only appears in `.claude-plugin/marketplace.json` when it works end-to-
 When adding a new plugin to fuzzydroid:
 
 1. Create `plugins/<name>/` with `plugin.json`, `skills/<name>/SKILL.md`, and `commands/setup.md` + `doctor.md`.
-2. Create `shared/fuzzydroid/fuzzydroid/<name>/` with `__init__.py`, `setup.py`, `doctor.py`.
-3. Add `shared/fuzzydroid/tests/<name>/` with `test_setup.py` and `test_doctor.py`.
-4. Add a row to `plugins/fusion/` section in `README.md`.
+2. Create `plugins/<name>/shared/fuzzydroid/fuzzydroid/<name>/` with `__init__.py`, `setup.py`, `doctor.py`, plus a `pyproject.toml` at `plugins/<name>/shared/fuzzydroid/pyproject.toml`.
+3. Add `plugins/<name>/shared/fuzzydroid/tests/<name>/` with `test_setup.py` and `test_doctor.py`.
+4. Add a row to `plugins/<name>/` section in `README.md`.
 5. Add the plugin to `marketplace.json`.
 6. If using upstream code, update `NOTICES.md`.
 7. Test on macOS AND Windows before shipping.

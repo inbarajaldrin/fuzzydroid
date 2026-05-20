@@ -30,7 +30,6 @@ __all__ = [
     "PLUGIN_NAME",
     "PLUGIN_VERSION",
     "PYTHON_VERSION",
-    "compute_repo_root",
     "run_setup",
     "main",
 ]
@@ -48,20 +47,18 @@ PLUGIN_VERSION = "0.1.0"
 PYTHON_VERSION = "3.11"
 
 
-def compute_repo_root(plugin_root: Path) -> Path:
-    """Given plugins/<name>/, return the repo root (two levels up)."""
-    return Path(plugin_root).parent.parent
-
-
 def run_setup(
     plugin_root: Path,
-    repo_root: Optional[Path] = None,
     log: Optional[Logger] = None,
 ) -> SetupResult:
-    """Run the full setup flow. Returns a SetupResult with ok=True on success."""
+    """Run the full setup flow. Returns a SetupResult with ok=True on success.
+
+    plugin_root is the directory of the plugin (CLAUDE_PLUGIN_ROOT). The bundled
+    Python package is at plugin_root/shared/fuzzydroid, identical for dev and
+    marketplace installs.
+    """
     log = log or Logger(PLUGIN_NAME)
     plugin_root = Path(plugin_root)
-    repo_root = Path(repo_root) if repo_root else compute_repo_root(plugin_root)
 
     # Step 1: Detect platform
     try:
@@ -105,7 +102,7 @@ def run_setup(
     log.success(f"Shared venv at {venv_path}")
 
     # Step 4: Editable install
-    shared_package = repo_root / "shared" / "fuzzydroid"
+    shared_package = plugin_root / "shared" / "fuzzydroid"
     try:
         fd_venv.install_editable(venv_path, shared_package)
     except fd_venv.VenvError as e:

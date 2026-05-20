@@ -9,8 +9,10 @@ Architecture:
 
 import json
 import os
+import re
 import shlex
 import sys
+from pathlib import Path
 from typing import Optional
 
 import click
@@ -286,6 +288,99 @@ def export_stl(ctx: click.Context, path: Optional[str]) -> None:
 def export_f3d(ctx: click.Context, path: Optional[str]) -> None:
     """Export as F3D (Fusion archive)."""
     result = bridge.export(fmt="f3d", path=path)
+    _output(ctx, result)
+
+
+def _find_plugin_scripts_dir() -> Optional[Path]:
+    """Locate plugins/fusion/scripts/.
+
+    Resolution order:
+      1. $CLAUDE_PLUGIN_ROOT/scripts     (set by /fusion:export slash command)
+      2. Walk up from this file to find a plugins/fusion/scripts directory
+         (works for dev clones and marketplace cache)
+    """
+    env_root = os.environ.get("CLAUDE_PLUGIN_ROOT")
+    if env_root:
+        p = Path(env_root) / "scripts"
+        if p.is_dir():
+            return p
+    # cli.py is at plugins/fusion/shared/fuzzydroid/fuzzydroid/fusion/cli.py
+    # so plugins/fusion/scripts/ is 5 parents up + /scripts
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / "scripts"
+        if candidate.is_dir() and (candidate / "export_urdf.py").is_file():
+            return candidate
+    return None
+
+
+def _run_export_script(
+    script_name: str,
+    output_dir: str,
+    overrides: Optional[dict] = None,
+) -> dict:
+    """Load a scripts/export_<fmt>.py file, substitute its CONFIG values,
+    and execute it inside Fusion via the bridge.
+    """
+    scripts_dir = _find_plugin_scripts_dir()
+    if not scripts_dir:
+        return {
+            "status": "error",
+            "message": "Could not locate plugins/fusion/scripts/. "
+                       "Set CLAUDE_PLUGIN_ROOT or run from /fusion:export.",
+        }
+    script_path = scripts_dir / script_name
+    if not script_path.is_file():
+        return {"status": "error", "message": f"Script not found: {script_path}"}
+
+    code = script_path.read_text()
+    # Substitute config constants — match assignments like `NAME = '...'`
+    subs = {"OUTPUT_DIR": output_dir}
+    if overrides:
+        subs.update(overrides)
+    for key, value in subs.items():
+        pattern = rf"^{re.escape(key)}\s*=\s*['\"][^'\"]*['\"]"
+        replacement = f"{key} = '{value}'"
+        code, n = re.subn(pattern, replacement, code, count=1, flags=re.MULTILINE)
+        if n == 0:
+            return {
+                "status": "error",
+                "message": f"Could not substitute {key} in {script_name}",
+            }
+    return bridge.exec_python(code)
+
+
+@export.command("urdf")
+@click.option("--path", default=None,
+              help="Output directory for the URDF package (default: ./outputs/<doc>_urdf).")
+@click.option("--pkg-name", default=None,
+              help="ROS2 package name (default: <doc>_pkg).")
+@click.option("--robot-name", default=None,
+              help="Robot name in URDF (default: active document name).")
+@click.pass_context
+def export_urdf(
+    ctx: click.Context,
+    path: Optional[str],
+    pkg_name: Optional[str],
+    robot_name: Optional[str],
+) -> None:
+    """Export as URDF (ROS2 package — directory, not a single file)."""
+    if not path:
+        # Resolve default from the active document name
+        doc = bridge.get_document()
+        if doc.get("status") != "ok":
+            _output(ctx, doc)
+            return
+        name = doc.get("name", "robot").replace(" ", "_")
+        path = f"./outputs/{name}_urdf"
+    overrides = {}
+    if pkg_name:
+        overrides["PKG_NAME"] = pkg_name
+    if robot_name:
+        overrides["ROBOT_NAME"] = robot_name
+    result = _run_export_script("export_urdf.py", path, overrides)
+    if result.get("status") == "ok":
+        result.setdefault("path", path)
     _output(ctx, result)
 
 

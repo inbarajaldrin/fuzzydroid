@@ -1,6 +1,5 @@
 {
   "name": "fusion",
-  "version": "0.1.0",
   "description": "Control Autodesk Fusion 360 from Claude Code - search projects, open files, export STEP/STL/URDF, run Python scripts inside Fusion's runtime",
   "author": {
     "name": "Aldrin Inbaraj"

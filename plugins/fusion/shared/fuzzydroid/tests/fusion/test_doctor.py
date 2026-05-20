@@ -218,11 +218,20 @@ class TestRunDoctor:
         link = tmp_path / "addin-link"
         link.symlink_to(source, target_is_directory=True)
 
-        # Valid pyproject + matching hash
-        repo_root = tmp_path / "repo"
-        (repo_root / "shared" / "fuzzydroid").mkdir(parents=True)
-        pyproject = repo_root / "shared" / "fuzzydroid" / "pyproject.toml"
+        # Valid pyproject + matching hash, bundled inside plugin_root
+        plugin_root = tmp_path / "plugin"
+        (plugin_root / "shared" / "fuzzydroid").mkdir(parents=True)
+        pyproject = plugin_root / "shared" / "fuzzydroid" / "pyproject.toml"
         pyproject.write_text("[project]\nname='fuzzydroid'\n")
+
+        # Fake editable install pointing at the plugin_root's bundled package
+        site_packages = venv / "lib" / "python3.11" / "site-packages"
+        dist_info = site_packages / "fuzzydroid-0.1.0.dist-info"
+        dist_info.mkdir(parents=True)
+        target = (plugin_root / "shared" / "fuzzydroid").resolve()
+        (dist_info / "direct_url.json").write_text(
+            '{"url":"file://' + str(target) + '","dir_info":{"editable":true}}'
+        )
 
         fd_config.save_state(
             "fusion",
@@ -237,7 +246,7 @@ class TestRunDoctor:
         mock_sock = MagicMock()
         mock_sock.recv.return_value = b'{"status":"ok","message":"pong"}'
         with patch("socket.create_connection", return_value=mock_sock):
-            rc = fd_doctor.run_doctor(repo_root=repo_root)
+            rc = fd_doctor.run_doctor(plugin_root=plugin_root)
 
         assert rc == 0
         out = capsys.readouterr().out
@@ -257,7 +266,7 @@ class TestMain:
         out = capsys.readouterr().out
         assert "| Check |" in out
 
-    def test_main_with_env_var_uses_computed_repo_root(
+    def test_main_with_env_var_passes_plugin_root(
         self, monkeypatch, tmp_path, capsys
     ):
         plugin_root = tmp_path / "plugins" / "fusion"

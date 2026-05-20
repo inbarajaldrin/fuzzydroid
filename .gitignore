@@ -28,6 +28,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Local-only state (scratchpad — machine-specific)
+.local/
+
 # Build artifacts
 build/
 dist/

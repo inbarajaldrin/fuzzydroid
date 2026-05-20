@@ -1,109 +1,167 @@
 ---
 name: fusion
-description: Control Autodesk Fusion 360 from Claude Code. Use this skill when the user asks to search Fusion projects, open a file in Fusion, export a design as STEP/STL/URDF/USD/F3D, list bodies or components, get the bounding box, inspect the timeline, or run Python inside Fusion's runtime. Also triggers on CAD automation, 3D model export, "open in Fusion", "export STEP", URDF export, robotics CAD, fusion2urdf, Autodesk Fusion API.
+description: Control Autodesk Fusion 360 from natural language — search projects, open files, inspect designs, export STEP/STL/URDF/F3D, generate CAD geometry from descriptions, view URDFs in a browser, and convert a flattened STEP into a rigged ROS package. Routes user intent to the cli-anything-fusion CLI over a TCP bridge. Triggers on Fusion 360, CAD automation, parametric design, "open in Fusion", "export STEP/STL/URDF", "design a cup/bracket/enclosure", URDF export, ROS package generation, fusion2urdf, CAD-to-URDF, robot rigging, Autodesk Fusion API.
 ---
 
 # Fusion 360 Automation
 
-Drives Autodesk Fusion 360 via a TCP bridge add-in exposing the full Fusion Python API on
-`localhost:8765`. All commands go through the `cli-anything-fusion` CLI, which is installed
-into the shared fuzzydroid venv by `/fusion:setup`.
+Drives Autodesk Fusion 360 via a TCP bridge add-in (`localhost:8765`) and a Python
+CLI (`cli-anything-fusion`) installed in the shared fuzzydroid venv. **You** (the
+agent) own the workflow — the user expresses intent in natural language; you route
+to the right CLI command, invoke it via `Bash`, and interpret the response.
 
-## Prerequisites
+The only user-facing slash commands are `/fusion:setup` (one-time install) and
+`/fusion:doctor` (health check). Everything else is agent-driven — the user can
+also explicitly route an intent through this plugin by invoking the skill
+directly, e.g. `/fusion:fusion <what they want to do>`.
 
-- `/fusion:setup` must have been run successfully.
-- Fusion 360 must be running with the `fusion_bridge` add-in loaded (one-time click in
-  Shift+S → Add-Ins → Run on Startup).
-- Always start with `/fusion:ping` to confirm the bridge is alive before running anything else.
+## Prerequisites (verify once per session)
 
-## Core commands
+1. `~/.config/fuzzydroid/fusion.toml` exists → plugin is installed. Otherwise tell
+   the user to run `/fusion:setup`.
+2. Fusion 360 is running with the `fusion_bridge` add-in loaded. Verify with:
+   ```bash
+   ~/.local/share/fuzzydroid/venv/bin/cli-anything-fusion --json ping
+   ```
+   If the response is `{"status":"ok","message":"pong",...}` → green light.
+   If connection refused → tell user to open Fusion (`Shift+S → Add-Ins → Run
+   fusion_bridge`) or run `/fusion:doctor` for a full diagnostic.
 
-Run slash commands directly — they wrap the CLI in the shared venv. If you need to invoke
-the CLI yourself from Bash, its path is stored in `~/.config/fuzzydroid/fusion.toml` under
-`venv_path` (append `/bin/cli-anything-fusion`, or `\Scripts\cli-anything-fusion.exe` on
-Windows).
+## Hard rules (non-negotiable)
 
-| Command | What it does |
-|---|---|
-| `/fusion:ping` | Check the bridge TCP is responding. |
-| `/fusion:open --project "P" --file "F"` | Open a file by project + folder path. |
-| `/fusion:export step --path ./outputs/out.step` | Export the active design. Formats: `step`, `stl`, `urdf`, `usd`, `f3d`. |
-| `/fusion:exec` | Pipe Python into the CLI to run code inside Fusion's runtime. |
-| `/fusion:doctor` | Health check — run this if anything seems off. |
-
-## Hard rules
-
-1. **Always ping first** before assuming the bridge is alive. If it fails, tell the user
-   to open Fusion 360 and load the `fusion_bridge` add-in via Shift+S.
-2. **Never modify designs from background threads.** The bridge already marshals API calls
-   to Fusion's main UI thread via CustomEvent — use the CLI, do not go around it.
-3. **Save exports to `./outputs/`** in the current project, not `/tmp`, unless the user
-   explicitly asks otherwise.
-4. **Screenshots go through the Fusion API** (`activeViewport.saveAsImageFile`), not
-   Peekaboo or macos-control. See `plugins/fusion/scripts/` for templates.
-5. **If the bridge is unreachable**, the diagnostic is `/fusion:doctor` — do not try to
+1. **Always `--json ping` before assuming the bridge is alive.** Cheap, decisive.
+2. **Never call the Fusion API from a background thread.** The bridge marshals to
+   the main UI thread for you — go through the CLI, not around it.
+3. **Always pass `--json`** when calling the CLI as an agent. The human-readable
+   mode is for terminals.
+4. **Default export path is `./outputs/`** in the current working directory.
+   Never `/tmp/` unless the user explicitly asks.
+5. **Screenshots use the Fusion API** (`activeViewport.saveAsImageFile`) — the
+   bridge is the authoritative path.
+6. **For any failure mode**, the diagnostic is `/fusion:doctor`. Don't try to
    restart anything manually.
 
-## Common patterns
+## Routing user intent to CLI calls
 
-Open a file and list its bodies:
+The CLI binary lives at `~/.local/share/fuzzydroid/venv/bin/cli-anything-fusion`.
+Common intent → command mappings:
+
+| User says | You run |
+|---|---|
+| "is Fusion alive / connected?" | `cli-anything-fusion --json ping` |
+| "list my projects" | `cli-anything-fusion --json project list` |
+| "find the SCARA arm" | `cli-anything-fusion --json project find --term "scara"` |
+| "open the SCARA arm" | First `project find`, present candidates if ambiguous, then `project open --project ... --file ...` |
+| "what's in this design?" | `cli-anything-fusion --json design info` |
+| "list the bodies / components / timeline" | `cli-anything-fusion --json design {bodies\|components\|timeline}` |
+| "what's the bounding box?" | `cli-anything-fusion --json design bbox` (reports cm) |
+| "export as STEP / STL / F3D" | `cli-anything-fusion --json export {step\|stl\|f3d} --path ./outputs/<name>.<ext>` |
+| "export as URDF" | `cli-anything-fusion --json export urdf --path ./outputs/<name>_urdf` (see `references/cad-to-urdf.md` for design prerequisites) |
+| "convert to USD" | Two steps — export STL, then `python3 plugins/fusion/scripts/export_usd.py <stl> <usd>` |
+| "screenshot the viewport" | `exec` with `app.activeViewport.saveAsImageFile(path, 1920, 1080)` |
+| "run this Python in Fusion" | `printf '<code>' \| cli-anything-fusion --json exec -` |
+
+Full command reference: `references/cli-commands.md`.
+
+## High-leverage workflows
+
+### View a URDF in the browser
+
+When the user has a ROS-style URDF package (any directory with `urdf/` and
+`meshes/`) and wants to see it:
 
 ```bash
-cli-anything-fusion --json project open --project "SO-ARM101" --file "arm_base"
-cli-anything-fusion --json design bodies
+python3 plugins/fusion/viewer/urdf/serve_urdf.py <pkg_dir> --port 8090
+# Add --host 0.0.0.0 to expose on Tailscale / LAN
 ```
 
-Export the active design as STEP:
+Auto-detects URDFs, generates an interactive viewer with joint sliders. Details:
+`references/urdf-viewer.md`.
 
-```bash
-cli-anything-fusion --json export step --path ./outputs/arm_base.step
-```
+### Export a Fusion design to a complete ROS 2 URDF package
 
-Run multi-line Python inside Fusion:
+`cli-anything-fusion export urdf` wraps `scripts/export_urdf.py`. **Requires the
+Fusion design to follow the script's conventions** — a `base_link` component,
+clean component identifiers, Fusion joints. Full prerequisites and the underlying
+formulas: `references/cad-to-urdf.md`.
 
-```bash
-printf 'import adsk.core\napp = adsk.core.Application.get()\nprint(app.activeDocument.name)' \
-  | cli-anything-fusion --json exec -
-```
+### Generate parametric CAD from a description
 
-Capture a viewport screenshot, then read it:
+When the user says "design a 60×60×50 mm container with a 5 mm dome cap" or
+similar, follow the recipe in `references/cad-generation.md`. Summary:
+
+1. Write a parametric script to `/tmp/f360_design.py` with a `CONFIG` dict for
+   every tunable dimension.
+2. Execute via `printf 'exec(open("/tmp/f360_design.py").read())' | cli-anything-fusion --json exec -`.
+3. Capture a viewport screenshot and present it.
+4. Iterate by editing CONFIG values; re-run.
+
+### Rig a flattened STEP file into a URDF
+
+When upstream CAD ships as a single STEP with no assembly tree (hundreds of
+`Body1`, `Body2`, ... bodies in one component — AgileX Bunker Mini is the canonical
+case), `export_urdf.py` doesn't apply directly. Follow the multi-step recipe in
+`references/cad-to-urdf.md` (Flavour B): import STEP → cluster bodies by spatial
+signature → export per-link STLs → merge with `trimesh` → hand-write the URDF.
+
+### Capture a viewport screenshot
 
 ```bash
 printf 'import adsk.core
 app = adsk.core.Application.get()
 app.activeViewport.saveAsImageFile("/tmp/fusion_viewport.png", 1920, 1080)
-print("ok")' | cli-anything-fusion --json exec -
-```
-
-Then use the Read tool on `/tmp/fusion_viewport.png`.
-
-## Bundled scripts
-
-`plugins/fusion/scripts/` ships runnable Python scripts:
-
-| Script | Purpose |
-|---|---|
-| `search_all_projects.py` | Scan all Fusion projects and folders |
-| `open_file.py` | Open a file by project/folder path |
-| `export_step.py` | Export the active design as STEP |
-| `export_urdf.py` | Export a robot as a full ROS2 URDF package (multi-component design) |
-| `export_single_urdf.py` | Export a single-link URDF |
-| `export_multi_link_urdf.py` | Export a multi-link URDF |
-| `create_container_with_cap.py` | Parametric container + cap example |
-
-Invoke a bundled script via the CLI:
-
-```bash
-printf "exec(open('plugins/fusion/scripts/export_step.py').read())" \
+print("ok")' \
   | cli-anything-fusion --json exec -
 ```
 
+Then `Read /tmp/fusion_viewport.png`.
+
+## Unit conventions
+
+The single most common source of "the export is 100× wrong" bugs:
+
+| Source | Unit | Convert to URDF metres by |
+|---|---|---|
+| `body.boundingBox` from Fusion Python API | **cm** | × `0.01` |
+| `body.physicalProperties.volume` | **cm³** | × `1e-6` for m³ |
+| Inertia from `getXYZMomentsOfInertia()` | **kg·cm²** | × `1e-6` for kg·m² |
+| **STL files exported by `exportManager`** | **mm** | × `0.001` |
+| **STEP files from external suppliers** | mm (by convention) | × `0.001` |
+
+Pick metres at every boundary and convert immediately. Do not let cm/mm/m mix
+inside any computation.
+
+## Bundled assets
+
+| Asset | Location | Used by |
+|---|---|---|
+| CLI source | `shared/fuzzydroid/fuzzydroid/fusion/cli.py` | Every command |
+| Bridge add-in | `addin/fusion_bridge/` | Runs inside Fusion |
+| Scripts | `scripts/` (export_urdf, export_usd, search_all_projects, etc.) | Run via `exec` |
+| URDF viewer | `viewer/urdf/serve_urdf.py` + `viewer/urdf/viewer/` | Browser-side rendering |
+| References | `skills/fusion/references/` | What you're reading now |
+
 ## When things break
 
-1. `/fusion:doctor` — the first move for any failure.
-2. If doctor says "dependencies changed since last setup", re-run `/fusion:setup`.
-3. If doctor says "bridge not reachable" but Fusion is open, the add-in isn't loaded —
-   Shift+S → Add-Ins → click Run on `fusion_bridge` (and check Run on Startup).
-4. If doctor says "addin symlink missing", Fusion may have been reinstalled; re-run
-   `/fusion:setup`.
-5. For anything else, file an issue at https://github.com/inbarajaldrin/fuzzydroid/issues.
+1. **Bridge unreachable** — `/fusion:doctor`. Tells you exactly which check failed.
+2. **`doctor` says "addin symlink missing"** — Fusion was reinstalled. Re-run `/fusion:setup`.
+3. **`doctor` says "pyproject drift"** — dependencies changed since setup. Re-run `/fusion:setup`.
+4. **`doctor` says "editable install: venv bound to … but plugin_root expects …"** — the venv's editable install is pointing at an old cache directory (typically after `claude plugin marketplace remove + add` swapped the source). Re-run `/fusion:setup` to rebind the venv to the current `${CLAUDE_PLUGIN_ROOT}`.
+5. **CLI says "fusion plugin is not set up"** — `/fusion:setup` was never run, or `fusion.toml` was deleted.
+6. **`exec_python` returns a traceback** — read it, fix the script, re-execute. Common Fusion errors: shell compute failure (use cut-extrude fallback), feature validation (reorder operations), profile not found (sketch isn't closed).
+7. **After `claude plugin marketplace remove + add` (swapping local-dev ↔ github)** — always re-run `/fusion:setup` to rebind the venv's editable install to the new cache. The pyproject hash may match across both caches (no drift reported) but the venv stays bound to the OLD physical path; a future `claude plugin prune` would silently break the CLI.
+8. **Anything else** — `https://github.com/inbarajaldrin/fuzzydroid/issues`.
+
+## References (load on demand)
+
+- `references/cad-to-urdf.md` — The full CAD→URDF workflow including the
+  `export_urdf.py` conventions, key formulas, the flattened-STEP recipe, and
+  every gotcha that has bitten this skill in production.
+- `references/urdf-viewer.md` — `serve_urdf.py` flags, Tailscale exposure,
+  two-instance setup, `package://` resolution.
+- `references/cli-commands.md` — Every CLI subcommand with example invocations.
+- `references/bridge-protocol.md` — TCP wire format and the 19 bridge commands.
+  Only needed when debugging at the protocol layer.
+- `references/cad-generation.md` — Recipe for natural-language → parametric
+  Python → Fusion design generation. Includes the geometry-technique selection
+  table and shell-fallback pattern.

@@ -9,6 +9,7 @@ of letting the caller block.
 """
 from __future__ import annotations
 
+import json
 import socket
 import sys
 import tomllib
@@ -30,6 +31,7 @@ __all__ = [
     "check_venv",
     "check_addin_symlink",
     "check_pyproject_drift",
+    "check_editable_install_target",
     "check_bridge_ping",
     "_resolve_bridge_port",
     "run_doctor",
@@ -128,6 +130,71 @@ def check_pyproject_drift(state: dict, pyproject_path: Path) -> CheckResult:
     return CheckResult("pyproject.toml", True, "no drift")
 
 
+def check_editable_install_target(state: dict, plugin_root: Path) -> CheckResult:
+    """Verify the venv's editable install of fuzzydroid points at the current plugin_root.
+
+    Catches the stale-link bug: after `claude plugin marketplace remove + add`,
+    the venv's editable install can still point at the old cache directory while
+    pyproject.toml content is identical. The drift check passes but the running
+    install is bound to a directory whose lifetime is no longer guaranteed
+    (a future `claude plugin prune` would break the CLI).
+
+    Reads pip's direct_url.json — the canonical record of every editable install's
+    source path.
+    """
+    venv_path_str = state.get("venv_path")
+    if not venv_path_str:
+        return CheckResult("editable install", False, "state file missing venv_path")
+    venv_path = Path(venv_path_str)
+
+    site_packages_candidates = list(venv_path.glob("lib/python*/site-packages"))
+    if not site_packages_candidates:
+        return CheckResult(
+            "editable install", False, f"no site-packages under {venv_path}"
+        )
+    site_packages = site_packages_candidates[0]
+
+    dist_info_candidates = list(site_packages.glob("fuzzydroid-*.dist-info"))
+    if not dist_info_candidates:
+        return CheckResult(
+            "editable install",
+            False,
+            "fuzzydroid not installed in venv - run /fusion:setup",
+        )
+
+    direct_url = dist_info_candidates[0] / "direct_url.json"
+    if not direct_url.exists():
+        return CheckResult(
+            "editable install",
+            False,
+            "no direct_url.json in dist-info - run /fusion:setup",
+        )
+
+    try:
+        data = json.loads(direct_url.read_text())
+    except Exception as e:
+        return CheckResult("editable install", False, f"direct_url.json unreadable: {e}")
+
+    url = data.get("url", "")
+    if not url.startswith("file://"):
+        return CheckResult(
+            "editable install", False, f"unsupported url scheme: {url}"
+        )
+    try:
+        target = Path(url[len("file://"):]).resolve()
+        expected = (plugin_root / "shared" / "fuzzydroid").resolve()
+    except OSError as e:
+        return CheckResult("editable install", False, f"path resolution failed: {e}")
+
+    if target != expected:
+        return CheckResult(
+            "editable install",
+            False,
+            f"venv bound to {target} but plugin_root expects {expected} - run /fusion:setup",
+        )
+    return CheckResult("editable install", True, "bound to current plugin cache")
+
+
 def _resolve_bridge_port() -> tuple[int, str]:
     """Read the bridge port from the discovery file, falling back to default.
 
@@ -193,8 +260,12 @@ def check_bridge_ping() -> CheckResult:
     return CheckResult("bridge TCP", False, f"unexpected response: {data!r}")
 
 
-def run_doctor(repo_root: Optional[Path] = None) -> int:
-    """Run all checks, print a markdown table, return exit code."""
+def run_doctor(plugin_root: Optional[Path] = None) -> int:
+    """Run all checks, print a markdown table, return exit code.
+
+    plugin_root is the directory of the plugin (CLAUDE_PLUGIN_ROOT). The bundled
+    pyproject.toml lives at plugin_root/shared/fuzzydroid/pyproject.toml.
+    """
     log = Logger(PLUGIN_NAME)
 
     state_check = check_state_file()
@@ -206,9 +277,10 @@ def run_doctor(repo_root: Optional[Path] = None) -> int:
     if state_check.ok:
         checks.append(check_venv(state))
         checks.append(check_addin_symlink(state))
-        if repo_root:
-            pyproject = repo_root / "shared" / "fuzzydroid" / "pyproject.toml"
+        if plugin_root:
+            pyproject = plugin_root / "shared" / "fuzzydroid" / "pyproject.toml"
             checks.append(check_pyproject_drift(state, pyproject))
+            checks.append(check_editable_install_target(state, plugin_root))
         checks.append(check_bridge_ping())
 
     print("| Check | Status | Detail |")
@@ -226,11 +298,8 @@ def run_doctor(repo_root: Optional[Path] = None) -> int:
 def main() -> int:
     import os
     plugin_root_str = os.environ.get("CLAUDE_PLUGIN_ROOT")
-    repo_root = None
-    if plugin_root_str:
-        from fuzzydroid.fusion.setup import compute_repo_root
-        repo_root = compute_repo_root(Path(plugin_root_str))
-    return run_doctor(repo_root=repo_root)
+    plugin_root = Path(plugin_root_str) if plugin_root_str else None
+    return run_doctor(plugin_root=plugin_root)
 
 
 if __name__ == "__main__":
