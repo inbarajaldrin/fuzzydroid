@@ -28,6 +28,7 @@ From the repository root, validate release packaging:
 ```bash
 python3 tools/sync_plugins.py --check
 python3 tools/check_plugins.py
+python3 -m unittest discover -s tools -p 'test_*.py'
 python3 tools/check_common_sync.py
 git diff --check
 ```
@@ -36,9 +37,9 @@ With Codex installed, `python3 tools/check_plugins.py --codex` also loads the
 repo catalog, skills, and MCP declarations through the actual Codex parser.
 This read-only check does not install plugins or edit Codex settings.
 
-After changing a Claude plugin manifest, marketplace entry, or command, run
-`python3 tools/sync_plugins.py` to refresh the Codex manifests, catalog, and
-command skills. Keep generated files in the same commit as their sources.
+After changing a Claude plugin manifest or marketplace entry, run
+`python3 tools/sync_plugins.py` to refresh the Codex manifests and catalog.
+Keep generated files in the same commit as their sources.
 Personal tutorials, their CAD exports, and timestamped backups belong in a user's
 project or reference archive. Skills retain general methods and reusable tools;
 do not bundle personal session histories. Live Fusion, KiCad, and NVIDIA

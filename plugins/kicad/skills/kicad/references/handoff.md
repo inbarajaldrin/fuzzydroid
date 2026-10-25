@@ -9,7 +9,7 @@ fzd-kicad --json handoff --board /absolute/board.kicad_pcb --output /new/handoff
 An alternate schematic path can be passed with `--schematic`. Omit `--fusion`
 for fabrication/STEP exports without a Fusion import. Use a fresh output folder;
 existing files aren't overwritten. Both KiCad backends must be available. Fusion
-import additionally requires `/fusion:setup` and a running Fusion bridge.
+import additionally requires `/fusion:fusion (setup workflow)` and a running Fusion bridge.
 
 The pipeline saves the expected live PCB and reads its closed outline, layer
 count, thickness, component references and model declarations. It runs ERC and

@@ -18,7 +18,7 @@ try:
     if not python.is_file():
         raise RuntimeError("The configured Python environment is missing")
 except (OSError, KeyError, ValueError, RuntimeError) as error:
-    print(f"KiCad plugin is not set up: {error}. Run /kicad:setup.", file=sys.stderr)
+    print(f"KiCad plugin is not set up: {error}. Run kicad setup workflow.", file=sys.stderr)
     raise SystemExit(1)
 
 os.execv(str(python), [str(python), "-m", "fuzzydroid_kicad.cli", *sys.argv[1:]])

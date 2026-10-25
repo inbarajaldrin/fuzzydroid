@@ -5,26 +5,26 @@ export STEP/STL/URDF, view models, and run Python scripts inside Fusion's runtim
 
 Bundled inside the [fuzzydroid](https://github.com/inbarajaldrin/fuzzydroid) marketplace.
 
-## Skills
+## Main skill
 
-| Skill | Purpose |
+Use `/fusion:fusion` in Claude Code or `$fusion:fusion` in Codex, or describe
+the CAD task in normal language. The agent loads the internal workflows it needs:
+
+| Workflow | Purpose |
 |---|---|
-| `fusion:setup` | Creates the per-plugin venv, installs the Python package, links the add-in, and records setup state. |
-| `fusion:doctor` | Verifies state, venv, add-in link, dependency drift, and the live bridge endpoint. |
-| `fusion:fusion` | Top-level routing skill — auto-triggers on Fusion / CAD / URDF / STEP / STL queries. |
-| `fusion:assemble` | Assemble parts from measured CAD features and verify seating. |
-| `fusion:rig-joints` | Rig serial arms, grippers, and chains with drivable joints. |
-| `fusion:cad-to-urdf` | Export and verify a rigged design as a ROS 2 description package. |
-| `fusion:create-palette` | Build a docked control panel with matching agent API access. |
-| `fusion:animation` | Render animation frames and videos inside Fusion. |
-| `fusion:printable-threads` | Author and validate native printable screw threads, derived seated targets, and production export gates. |
+| Setup and doctor | Install the runtime and add-in; verify installation and bridge health. |
+| Assembly | Mate parts from measured CAD features and verify seating. |
+| Joint rigging | Rig serial arms, grippers, and chains with drivable joints. |
+| CAD-to-URDF | Export and verify a ROS 2 description package. |
+| Control palettes | Build docked controls with matching agent API access. |
+| Animation | Render animation frames and videos inside Fusion. |
+| Printable threads | Author native modeled threads and validate seating and production exports. |
 
 ## Install
 
 ```
 /plugin marketplace add https://github.com/inbarajaldrin/fuzzydroid
 /plugin install fusion@fuzzydroid
-/fusion:setup
 ```
 
 In Codex CLI:
@@ -34,30 +34,18 @@ codex plugin marketplace add https://github.com/inbarajaldrin/fuzzydroid
 codex plugin add fusion@fuzzydroid
 ```
 
-Start a new session and invoke `$fusion:setup`, then `$fusion:doctor`.
-After setup, describe the CAD task in normal language, or explicitly start with
-`$fusion:fusion` in Codex or `/fusion:fusion` in Claude Code. The Fusion router
-loads the appropriate assembly, rigging, export, threading, palette, or animation
-instructions itself. You do not need to invoke each specialist skill.
+Start a new session and describe your task. The main skill handles setup and
+diagnostics as needed. For example, “rig this gripper and export a URDF” combines
+joint authoring and export within the same task.
 
-For example, `$fusion:fusion rig this gripper and export a URDF` routes through
-joint authoring and CAD-to-URDF export in the same task. The other listed skills
-remain available as optional direct entry points.
-
-Then enable the bridge add-in inside Fusion:
+When setup prompts for the manual application step, enable the bridge:
 
 1. Open Fusion 360
 2. Press **Shift+S** to open the Scripts and Add-Ins dialog
 3. Switch to the **Add-Ins** tab
 4. Select `fusion_bridge`, then click **Run** and check **Run on Startup**
 
-Verify everything is wired up:
-
-```
-/fusion:doctor
-```
-
-You should see the state file, venv, add-in symlink, and bridge ping all green.
+The agent then runs doctor to verify state, the venv, add-in link, and live bridge.
 
 ## Requirements
 
@@ -80,7 +68,7 @@ Claude Code / Codex ──(CLI)──▶ Bridge add-in ──▶ Fusion API
 ```
 
 State (paths, venv location, hash of `pyproject.toml`) lives in a state file
-managed by `/fusion:setup` and verified by `/fusion:doctor`.
+managed by the setup workflow and verified by doctor.
 
 Skills bundle general methods, API references, and reusable tools. Keep personal
 walkthroughs, model-specific scripts, CAD exports, and session records in the

@@ -7,18 +7,34 @@ description: Manage a machine's Isaac Lab (NVIDIA's RL/imitation-learning framew
 
 This skill works in Claude Code and Codex. Resolve symlinks on this file; the
 plugin root is three parent directories above this `SKILL.md`. Use that absolute
-root for `plugins/<plugin>/...` examples, regardless of the working directory.
-When `CLAUDE_PLUGIN_ROOT` is unavailable, pass the resolved root under that name
-to commands that use it. Use the host's equivalent tools for `Bash`, `Read`,
-`WebFetch` and user questions. In Codex, `$plugin:skill` invokes the sibling skill
-named by a `/plugin:skill` reference. Read sibling `SKILL.md` files directly when
-needed; do not assume another host's slash commands exist.
+root for plugin assets regardless of the working directory, and pass it as
+`CLAUDE_PLUGIN_ROOT` to commands that use that variable. Use the current host's
+equivalent shell, file, web, and user-input tools. Resolve links below from this
+skill directory. Within an internal workflow, resolve its `references/`,
+`scripts/`, and `evals/` from that workflow's directory; explicit
+`skills/<plugin>/...` paths start at the plugin root.
 
 # Isaac Lab plugin
 
 Everything this plugin knows about a machine lives in
 `~/.config/fuzzydroid/isaaclab.toml`. Read it first; never guess venv names
 (`env_isaaclab` is a doc example, not a fact), Lab paths, or ports.
+
+## Route internally
+
+The public entry point is `/isaaclab:isaaclab` in Claude Code or
+`$isaaclab:isaaclab` in Codex. Users can describe their goal in normal language.
+Read the relevant workflow yourself and continue through verification. Combine
+workflows when needed, retaining the same project, runtime, and output paths.
+When setup is missing or a connection fails, follow setup or doctor within
+the task and resume once the prerequisites hold. Ask for missing project facts
+or required manual application steps.
+
+| Goal | Internal workflow |
+|---|---|
+| Detect and record an install or configure bridge access | [setup](references/workflows/setup.md) |
+| Diagnose installation, launch guards, or bridge health | [doctor](references/workflows/doctor.md) |
+| Scaffold an extension project from the pinned template | [new-project](references/workflows/new-project.md) |
 
 ## Ground rules
 
@@ -28,8 +44,8 @@ Everything this plugin knows about a machine lives in
 - **State file fields**: `variant` (pip/source), `lab_root`, `lab_python`,
   `lab_version`, `isaac_version`, `omni_kit_mcp` (checkout used for bridge
   launches), `mcp_port` (Lab-side OMNI_KIT_MCP_PORT, default 9010).
-- Missing state file → `/isaaclab:setup`. Health → `/isaaclab:doctor`.
-  New project → `/isaaclab:new-project`.
+- Missing state file → `references/workflows/setup.md`. Health → `references/workflows/doctor.md`.
+  New project → `references/workflows/new-project.md`.
 
 ## Launching with bridge + livestream
 
@@ -56,11 +72,12 @@ command. The one rule to never violate even in a quick one-off:
 ## Related
 
 - Isaac Sim install/bridge/viewer: the `isaacsim` plugin.
-- Doc lookups (Isaac Lab APIs, rsl_rl/skrl/sb3 workflows): the `robodocs` plugin.\n
+- Doc lookups (Isaac Lab APIs, rsl_rl/skrl/sb3 workflows): the `robodocs` plugin.
+
 ## API questions: installed source vs live docs
 
 Route by question shape: API-exact (signature / cfg field / task id) -> read
 the installed source; the map lives in `references/installed-source-atlas.md`
 (roots derived from the state file, never hardcoded). Concepts, workflow
-choices, deprecations -> live docs (`/robodocs:nvidia`). When they disagree,
+choices, deprecations -> live docs (`/robodocs:robodocs (nvidia workflow)`). When they disagree,
 the installed source wins — the runtime is the arbiter.

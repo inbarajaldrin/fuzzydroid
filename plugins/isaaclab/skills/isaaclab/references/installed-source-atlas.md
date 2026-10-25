@@ -55,5 +55,5 @@ packages but not the tutorials — clone the IsaacLab repo when you need them.)
 | Question shape | Route |
 |---|---|
 | Exact signature / cfg field / task id / manager term | **Installed source** (this atlas) |
-| Concept, workflow choice, tutorial, deprecation | **Live docs** (`/robodocs:nvidia` → isaac-lab) |
+| Concept, workflow choice, tutorial, deprecation | **Live docs** (`/robodocs:robodocs (nvidia workflow)` → isaac-lab) |
 | The two disagree | **Installed source wins** for code that runs on this box — the runtime is the arbiter |

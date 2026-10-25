@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Codex metadata and command skills from the Claude plugin sources.
+"""Generate Codex metadata from the Claude plugin manifests.
 
 Run with --check in CI; without arguments, update generated files.
 """
@@ -11,11 +11,6 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DOC_DESCRIPTIONS = {
-    "lerobot": "Fetch live HuggingFace LeRobot documentation for robot hardware, teleoperation, datasets, calibration, imitation learning, and policies such as ACT, SmolVLA, Pi0, Diffusion and HIL-SERL.",
-    "mujoco": "Fetch live MuJoCo ecosystem documentation for MJCF, Python/C APIs, MJX, MJWarp, Menagerie, Playground, MPC and dm_control. Use for simulation, contact dynamics, actuators, rendering and MuJoCo troubleshooting.",
-    "nvidia": "Fetch live NVIDIA robotics and Physical-AI documentation. Route questions about Isaac Sim, Isaac Lab, Isaac ROS, GR00T, Cosmos, Warp, Omniverse, OpenUSD, Replicator, NGC containers and NVIDIA developer forums.",
-}
 
 
 def generated_files() -> dict[Path, str]:
@@ -59,31 +54,6 @@ def generated_files() -> dict[Path, str]:
                 "category": "Developer Tools",
             }
         )
-        for command in sorted((plugin / "commands").glob("*.md")):
-            # RoboDocs keeps its detailed workflows in commands/ too.
-            description = (
-                f"Run the {entry['name']} {command.stem} workflow. "
-                f"Use when the user asks for {entry['name']} {command.stem}."
-            )
-            if entry["name"] == "robodocs":
-                description = DOC_DESCRIPTIONS[command.stem]
-            files[plugin / "skills" / command.stem / "SKILL.md"] = (
-                "---\n"
-                f"name: {command.stem}\n"
-                f"description: {description}\n"
-                "---\n\n"
-                f"# {entry['name']} {command.stem}\n\n"
-                "Resolve symlinks on this file. The plugin root is three parent\n"
-                "directories above this `SKILL.md` (`<plugin>/skills/<skill>/SKILL.md`).\n"
-                "Use that absolute root in every command; pass it as\n"
-                "`CLAUDE_PLUGIN_ROOT` to child processes that use that variable.\n\n"
-                f"Read `<plugin-root>/commands/{command.name}` and follow its workflow.\n"
-                "Resolve its relative references from the paths it specifies.\n"
-                "Use the current host's shell, file, web and user-input tools for\n"
-                "`Bash`, `Read`, `WebFetch` and `AskUserQuestion` respectively.\n"
-                "In Codex, invoke sibling skills with `$plugin:skill`; slash-command\n"
-                "names in the workflow refer to the equivalent bundled skills.\n"
-            )
     files[ROOT / ".agents/plugins/marketplace.json"] = (
         json.dumps(marketplace, indent=2) + "\n"
     )
@@ -106,9 +76,7 @@ def main() -> int:
         print("Generated plugin files are stale; run python3 tools/sync_plugins.py:")
         print("\n".join(stale))
         return 1
-    print(
-        f"Plugin metadata and command skills are in sync ({len(generated_files())} files)."
-    )
+    print(f"Plugin metadata is in sync ({len(generated_files())} files).")
     return 0
 
 

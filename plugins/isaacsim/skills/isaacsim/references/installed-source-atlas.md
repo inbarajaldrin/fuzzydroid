@@ -62,5 +62,5 @@ Isaac Lab has its own atlas — see the `isaaclab` plugin's
 | Question shape | Route |
 |---|---|
 | Exact signature / widget / kwarg / setting key / OGN node name | **Installed source** (this atlas) |
-| Concept, tutorial, "how should I", "is this deprecated" | **Live docs** (`/robodocs:nvidia` → isaac-sim) |
+| Concept, tutorial, "how should I", "is this deprecated" | **Live docs** (`/robodocs:robodocs (nvidia workflow)` → isaac-sim) |
 | The two disagree | **Installed source wins** for code that runs on this box — the runtime is the arbiter |

@@ -1,10 +1,19 @@
 {
   "name": "kicad",
   "version": "0.1.0",
-  "description": "Live KiCad PCB automation through official IPC and an embedded main-thread bridge, with shared CLI, MCP and tool panel.",
-  "author": {"name": "Aldrin Inbaraj"},
+  "description": "Control the running KiCad PCB Editor—inspect and edit boards, load footprints and 3D models, and export designs.",
+  "author": {
+    "name": "Aldrin Inbaraj"
+  },
   "license": "Apache-2.0",
   "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
   "repository": "https://github.com/inbarajaldrin/fuzzydroid",
-  "keywords": ["kicad", "pcb", "electronics", "mcp", "cad", "robotics"]
+  "keywords": [
+    "kicad",
+    "pcb",
+    "electronics",
+    "mcp",
+    "cad",
+    "robotics"
+  ]
 }

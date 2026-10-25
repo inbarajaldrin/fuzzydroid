@@ -1,10 +1,10 @@
 # fuzzydroid-fusion (plugin Python package)
 
 The fusion plugin's Python code: the `fzd-fusion` CLI, the bridge client that
-talks to the `fusion_bridge` add-in inside Fusion 360, and the `/fusion:setup` /
-`/fusion:doctor` plumbing.
+talks to the `fusion_bridge` add-in inside Fusion 360, and the `../../skills/fusion/references/workflows/setup.md` /
+`../../skills/fusion/references/workflows/doctor.md` plumbing.
 
-Installed editable by `/fusion:setup` into the plugin's own venv at
+Installed editable by `../../skills/fusion/references/workflows/setup.md` into the plugin's own venv at
 `~/.local/share/fuzzydroid/fusion/venv` (Windows:
 `%LOCALAPPDATA%\fuzzydroid\fusion\venv`). Each fuzzydroid plugin owns its venv —
 there is no shared install unit, so one plugin's dependencies or reinstalls can
@@ -18,8 +18,8 @@ fuzzydroid_fusion/
 ├── _symlink.py      # cross-platform dir symlink/junction (add-in install)
 ├── _logbook.py      # prefixed logger for setup/doctor output
 ├── cli.py           # fzd-fusion CLI (click)
-├── setup.py         # /fusion:setup orchestrator
-├── doctor.py        # /fusion:doctor health checks
+├── setup.py         # ../../skills/fusion/references/workflows/setup.md orchestrator
+├── doctor.py        # ../../skills/fusion/references/workflows/doctor.md health checks
 ├── core/
 │   ├── bridge.py    # endpoint discovery + JSON protocol client (UDS/TCP)
 │   └── session.py   # CLI session state (undo/redo, history)

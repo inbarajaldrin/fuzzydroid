@@ -1,6 +1,6 @@
-"""Recorder for /isaacsim:setup — non-interactive by design.
+"""Recorder for isaacsim setup workflow — non-interactive by design.
 
-The setup COMMAND (commands/setup.md) owns the interactive flow: it delegates
+The setup COMMAND (skills/isaacsim/references/workflows/setup.md) owns the interactive flow: it delegates
 the install itself to live upstream docs (NVIDIA / isaac-viewer-macos /
 omni-kit-mcp), runs detect.py, presents the inventory, and asks the user the
 ask-once questions. This module is the final, idempotent step: it validates
@@ -121,12 +121,12 @@ def main() -> int:
     if not c.is_uv_available():
         print("uv is not installed. Install it first:\n"
               "  curl -LsSf https://astral.sh/uv/install.sh | sh\n"
-              "Then re-run /isaacsim:setup.")
+              "Then re-run isaacsim setup workflow.")
         return 1
 
     plugin_root = (os.environ.get("CLAUDE_PLUGIN_ROOT") or os.environ.get("PLUGIN_ROOT"))
     if not plugin_root:
-        print("CLAUDE_PLUGIN_ROOT is not set — run this via /isaacsim:setup, not directly.")
+        print("CLAUDE_PLUGIN_ROOT is not set — run this via isaacsim setup workflow, not directly.")
         return 1
     package_path = Path(plugin_root) / "lib" / "fuzzydroid_isaacsim"
 
@@ -232,7 +232,7 @@ def main() -> int:
     }
     c.save_state(PLUGIN_NAME, state)
     print(f"state written: {c.state_file(PLUGIN_NAME)}")
-    print("run /isaacsim:doctor to verify.")
+    print("run isaacsim doctor workflow to verify.")
     return 0
 
 

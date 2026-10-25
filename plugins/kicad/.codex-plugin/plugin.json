@@ -1,7 +1,7 @@
 {
   "name": "kicad",
   "version": "0.1.0",
-  "description": "Live KiCad PCB automation through official IPC and an embedded main-thread bridge, with shared CLI, MCP and tool panel.",
+  "description": "Control the running KiCad PCB Editor\u2014inspect and edit boards, load footprints and 3D models, and export designs.",
   "author": {
     "name": "Aldrin Inbaraj"
   },
@@ -19,7 +19,7 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "KiCad",
-    "shortDescription": "Live KiCad PCB automation through official IPC and an embedded main-thread bridge, with shared CLI, ",
+    "shortDescription": "Control the running KiCad PCB Editor",
     "developerName": "Aldrin Inbaraj",
     "category": "Developer Tools"
   },

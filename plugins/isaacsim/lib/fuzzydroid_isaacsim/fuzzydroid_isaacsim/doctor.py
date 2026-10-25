@@ -1,4 +1,4 @@
-"""Health check for /isaacsim:doctor — rows DRIVEN BY the state file.
+"""Health check for isaacsim doctor workflow — rows DRIVEN BY the state file.
 
 The rule: components the setup did not install read "N/A — not installed",
 never FAIL. A box without isaac-ctl, without ROS, or without a viewer is a
@@ -113,7 +113,7 @@ def main() -> int:
     if state is None:
         print("| component | status | detail |")
         print("|---|---|---|")
-        print(f"| state file | {FAIL} | {state_path} missing — run /isaacsim:setup |")
+        print(f"| state file | {FAIL} | {state_path} missing — run isaacsim setup workflow |")
         return 1
     add("state file", OK, f"`{state_path}` parses (v{state.get('plugin_version', '?')})")
 
@@ -122,7 +122,7 @@ def main() -> int:
     if c.venv_python(venv).exists():
         add("plugin venv", OK, f"`{venv}`")
     else:
-        add("plugin venv", FAIL, f"python missing at `{c.venv_python(venv)}` — re-run /isaacsim:setup")
+        add("plugin venv", FAIL, f"python missing at `{c.venv_python(venv)}` — re-run isaacsim setup workflow")
         rc = 1
     plugin_root = Path(__file__).resolve().parents[1]  # lib/fuzzydroid_isaacsim
     pyproject = plugin_root / "pyproject.toml"
@@ -130,7 +130,7 @@ def main() -> int:
         if c.hash_file(pyproject) == state["pyproject_hash"]:
             add("pyproject drift", OK, "deps unchanged since setup")
         else:
-            add("pyproject drift", FAIL, "deps changed since setup — re-run /isaacsim:setup")
+            add("pyproject drift", FAIL, "deps changed since setup — re-run isaacsim setup workflow")
             rc = 1
 
     variant = state.get("variant", "?")
@@ -187,7 +187,7 @@ def main() -> int:
             elif enabled:
                 add("ROS 2 bridge ext", WARN, f"enabled as `{enabled}` but setup recorded `{expected}` — version drift; re-run setup's ROS step")
             else:
-                add("ROS 2 bridge ext", FAIL, f"`{expected}` not in the persistent enabled list — re-run /isaacsim:setup with ROS")
+                add("ROS 2 bridge ext", FAIL, f"`{expected}` not in the persistent enabled list — re-run isaacsim setup workflow with ROS")
                 rc = 1
         else:
             add("ROS 2 bridge ext", NA, "ROS not configured by setup")
@@ -207,7 +207,7 @@ def main() -> int:
             add("omni-kit-mcp checkout", FAIL, f"recorded at `{okm}` but exts/omni.kit.mcp missing")
             rc = 1
     else:
-        add("omni-kit-mcp checkout", NA, "not recorded — bridge probe falls back to a raw socket; re-run /isaacsim:setup with --omni-kit-mcp to record it")
+        add("omni-kit-mcp checkout", NA, "not recorded — bridge probe falls back to a raw socket; re-run isaacsim setup workflow with --omni-kit-mcp to record it")
 
     # bind host — remote-access posture. The bridge binds localhost by default;
     # a recorded non-loopback host means run_python is exposed to that network.
@@ -262,10 +262,10 @@ def main() -> int:
         if oc.is_file():
             add("operate client", OK, f"`{oc}` → drives sim box `{box}`")
         else:
-            add("operate client", FAIL, f"recorded at `{oc}` but client.py is gone — re-run /isaacsim:setup")
+            add("operate client", FAIL, f"recorded at `{oc}` but client.py is gone — re-run isaacsim setup workflow")
             rc = 1
     elif variant == "viewer":
-        add("operate client", NA, "not set up — /isaacsim:setup can drop kit_mcp's client.py here to drive a remote sim from this Mac")
+        add("operate client", NA, "not set up — isaacsim setup workflow can drop kit_mcp's client.py here to drive a remote sim from this Mac")
 
     # isaac-ctl — only if setup recorded it
     if state.get("isaac_ctl"):

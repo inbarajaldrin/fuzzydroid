@@ -25,7 +25,7 @@ fzd-fusion --json ping
 ```
 
 Returns `{"status": "ok", "message": "pong", "bridge": "fusion_bridge", "pid": <fusion_pid>}`. If the
-bridge is unreachable, you get a structured error pointing at `/fusion:doctor`.
+bridge is unreachable, you get a structured error pointing at `workflows/doctor.md`.
 
 **Always ping first** when a session opens — it's the cheapest "is Fusion alive"
 check.
@@ -179,7 +179,7 @@ auditability.
 
 ## Resolving the venv-bound CLI from a slash command
 
-Slash commands (`commands/setup.md`, `commands/doctor.md`) need to find the
+Internal setup and doctor workflows need to find the
 venv's Python at runtime. The canonical snippet:
 
 ```bash
@@ -196,7 +196,7 @@ print(venv / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python'))
 ")
 
 if [ -z "$VENV_PYTHON" ]; then
-    echo "fusion plugin is not set up - run /fusion:setup first"
+    echo "fusion plugin is not set up - run workflows/setup.md first"
     exit 1
 fi
 

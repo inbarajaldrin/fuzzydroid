@@ -4,7 +4,7 @@ argument-hint: <description of what to create or modify>
 allowed-tools: [Bash, Read, Write]
 ---
 
-# /fusion:design
+# /fusion:fusion (design workflow)
 
 Generate CAD geometry in Fusion 360 from a text description or reference image. This command
 drives the full design loop: understand the request, write a parametric script, execute it in
@@ -221,7 +221,7 @@ print(venv / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python'))
 ")
 
 if [ -z "$VENV_PYTHON" ]; then
-    echo "fusion plugin is not set up - run /fusion:setup first"
+    echo "fusion plugin is not set up - run workflows/setup.md first"
     exit 1
 fi
 
@@ -262,4 +262,4 @@ is satisfied.
 When the user says "save this" or "looks good":
 1. Ask which Fusion project/folder to save to (or save to current if already open).
 2. Use `app.activeDocument.save("name")` or `saveAs` via exec.
-3. Optionally export to `./outputs/` via `/fusion:export`.
+3. Optionally export to `./outputs/` via `/fusion:fusion (export workflow)`.

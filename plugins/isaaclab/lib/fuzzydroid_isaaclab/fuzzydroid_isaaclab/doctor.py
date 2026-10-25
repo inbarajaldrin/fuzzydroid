@@ -1,4 +1,4 @@
-"""Health check for /isaaclab:doctor — rows DRIVEN BY the state file.
+"""Health check for isaaclab doctor workflow — rows DRIVEN BY the state file.
 
 Components the setup did not install/record read "N/A — not installed",
 never FAIL. The one active hazard scan: the static-TLS tunable in the Lab
@@ -30,7 +30,7 @@ def main() -> int:
     if state is None:
         print("| component | status | detail |")
         print("|---|---|---|")
-        print(f"| state file | {FAIL} | {state_path} missing — run /isaaclab:setup |")
+        print(f"| state file | {FAIL} | {state_path} missing — run isaaclab setup workflow |")
         return 1
     add("state file", OK, f"`{state_path}` parses (v{state.get('plugin_version', '?')})")
 
@@ -38,7 +38,7 @@ def main() -> int:
     if c.venv_python(venv).exists():
         add("plugin venv", OK, f"`{venv}`")
     else:
-        add("plugin venv", FAIL, f"python missing at `{c.venv_python(venv)}` — re-run /isaaclab:setup")
+        add("plugin venv", FAIL, f"python missing at `{c.venv_python(venv)}` — re-run isaaclab setup workflow")
         rc = 1
     plugin_root = Path(__file__).resolve().parents[1]
     pyproject = plugin_root / "pyproject.toml"
@@ -46,7 +46,7 @@ def main() -> int:
         if c.hash_file(pyproject) == state["pyproject_hash"]:
             add("pyproject drift", OK, "deps unchanged since setup")
         else:
-            add("pyproject drift", FAIL, "deps changed since setup — re-run /isaaclab:setup")
+            add("pyproject drift", FAIL, "deps changed since setup — re-run isaaclab setup workflow")
             rc = 1
 
     variant = state.get("variant", "?")
@@ -55,7 +55,7 @@ def main() -> int:
         if lab_root.is_dir():
             add("lab root", OK, f"`{lab_root}` ({variant}, {state.get('lab_version', 'version unrecorded')})")
         else:
-            add("lab root", FAIL, f"recorded root gone: `{lab_root}` — re-run /isaaclab:setup")
+            add("lab root", FAIL, f"recorded root gone: `{lab_root}` — re-run isaaclab setup workflow")
             rc = 1
     else:
         add("lab root", NA, "not recorded")
@@ -84,7 +84,7 @@ def main() -> int:
                         f"metadata reports isaaclab {meta} but `import isaaclab` failed "
                         "under the recorded python — a Lab run would fail the same way")
                 else:
-                    add("isaaclab dist", FAIL, f"`{lp}` cannot import or resolve the isaaclab dist — env was rebuilt? re-run /isaaclab:setup")
+                    add("isaaclab dist", FAIL, f"`{lp}` cannot import or resolve the isaaclab dist — env was rebuilt? re-run isaaclab setup workflow")
                     rc = 1
     else:
         add("lab python", NA, "no venv recorded (source install)")

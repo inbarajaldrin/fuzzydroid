@@ -1,24 +1,44 @@
 ---
 name: isaacsim
-description: Manage a machine's NVIDIA Isaac Sim footprint — detect existing installs (pip/binary/source), record the chosen one, register the omni.kit.mcp bridge, persistently enable the ROS 2 bridge, and (on macOS) install the native Isaac Viewer streaming app. Use when the user asks to set up, verify, launch, or troubleshoot Isaac Sim, its WebRTC streaming, its MCP bridge, or its ROS 2 bridge. Triggers on "isaac sim setup", "is isaac sim installed", "connect to the sim", "isaac streaming", "ros2 bridge isaac", "omni.kit.mcp".
+description: Control NVIDIA Isaac Sim and manage its local or remote runtime. Use for setup and diagnostics, URDF-to-USD import, articulation assembly, collision authoring, physics validation, USD animation and recording, extension controls, WebRTC streaming, MCP, and the ROS 2 bridge. Detect existing installs and configure a macOS viewer when needed; load the relevant internal workflows automatically.
 ---
 
 ## Agent host compatibility
 
 This skill works in Claude Code and Codex. Resolve symlinks on this file; the
 plugin root is three parent directories above this `SKILL.md`. Use that absolute
-root for `plugins/<plugin>/...` examples, regardless of the working directory.
-When `CLAUDE_PLUGIN_ROOT` is unavailable, pass the resolved root under that name
-to commands that use it. Use the host's equivalent tools for `Bash`, `Read`,
-`WebFetch` and user questions. In Codex, `$plugin:skill` invokes the sibling skill
-named by a `/plugin:skill` reference. Read sibling `SKILL.md` files directly when
-needed; do not assume another host's slash commands exist.
+root for plugin assets regardless of the working directory, and pass it as
+`CLAUDE_PLUGIN_ROOT` to commands that use that variable. Use the current host's
+equivalent shell, file, web, and user-input tools. Resolve links below from this
+skill directory. Within an internal workflow, resolve its `references/`,
+`scripts/`, and `evals/` from that workflow's directory; explicit
+`skills/<plugin>/...` paths start at the plugin root.
 
 # Isaac Sim plugin
 
 Everything this plugin knows about a machine lives in
-`~/.config/fuzzydroid/isaacsim.toml` — the state file `/isaacsim:setup`
+`~/.config/fuzzydroid/isaacsim.toml` — the state file `references/workflows/setup.md`
 writes. Read it first; never guess venv names, install paths, or ports.
+
+## Route internally
+
+The public entry point is `/isaacsim:isaacsim` in Claude Code or
+`$isaacsim:isaacsim` in Codex. Users can describe their goal in normal language.
+Read the relevant workflow yourself and continue through verification. Combine
+workflows when needed, retaining the same project, runtime, and output paths.
+When setup is missing or a connection fails, follow setup or doctor within
+the task and resume once the prerequisites hold. Ask for missing project facts
+or required manual application steps.
+
+| Goal | Internal workflow |
+|---|---|
+| Detect installs, record one, configure a bridge or macOS viewer | [setup](references/workflows/setup.md) |
+| Check installation, bridge, ROS, or streaming health | [doctor](references/workflows/doctor.md) |
+| Import a URDF and verify its drives | [urdf-to-usd/workflow](references/workflows/urdf-to-usd/workflow.md) |
+| Compose articulations, collision filtering, and simulation lifecycle | [assemble/workflow](references/workflows/assemble/workflow.md) |
+| Choose and validate colliders | [add-physics/workflow](references/workflows/add-physics/workflow.md) |
+| Author USD motion, preview, or record an animation | [animation/workflow](references/workflows/animation/workflow.md) |
+| Build project controls or an Isaac Sim extension | [create-extension/workflow](references/workflows/create-extension/workflow.md) |
 
 ## Ground rules
 
@@ -35,8 +55,8 @@ writes. Read it first; never guess venv names, install paths, or ports.
   `ros_bridge_ext`), `isaac_ctl`, `viewer_app`, and — on a Mac that drives a
   remote sim — `operate_client` (local `client.py` path), `sim_box_host`,
   `sim_box_port`.
-- If the state file is missing → point the user at `/isaacsim:setup`.
-- Health questions → `/isaacsim:doctor` (state-driven; N/A rows are normal).
+- If the state file is missing, follow `references/workflows/setup.md`.
+- Health questions → `references/workflows/doctor.md` (state-driven; N/A rows are normal).
 
 ## API questions: installed source vs live docs
 
@@ -46,7 +66,7 @@ shipping its own docs and source. Route by question shape:
 | Question shape | Route |
 |---|---|
 | Exact signature / widget / kwarg / setting key / OGN node | **installed source** — read `references/installed-source-atlas.md` for the map (roots derived from the state file, never hardcoded) |
-| Concept, tutorial, \"how should I\", deprecation | **live docs** (`/robodocs:nvidia`) |
+| Concept, tutorial, \"how should I\", deprecation | **live docs** (`/robodocs:robodocs (nvidia workflow)`) |
 | They disagree | installed source wins — the runtime is the arbiter |
 
 ## Talking to a running sim
@@ -73,14 +93,14 @@ Kit's main thread. For the full protocol, the `BridgeClient` persistent-
 connection API, and the `kit-mcp` MCP front-end, read the omni-kit-mcp repo's
 README ("Scripting the bridge").
 
-If `omni_kit_mcp` is not in the state file, re-run `/isaacsim:setup` with
+If `omni_kit_mcp` is not in the state file, re-run `references/workflows/setup.md` with
 `--omni-kit-mcp <checkout>` to record it.
 
 ## Operate from another machine (e.g. the macOS viewer box)
 
 The Mac's role isn't only *viewing* the WebRTC stream — it can *drive* the sim
 too. The reference client is a single stdlib-only file, so operating a remote
-sim needs nothing on the Mac beyond a copy of it. `/isaacsim:setup` (macOS
+sim needs nothing on the Mac beyond a copy of it. `references/workflows/setup.md` (macOS
 branch) offers to drop `client.py` + a short README into `~/Documents/isaacsim`
 and records `operate_client` + `sim_box_host` (+ optional `sim_box_port`) in
 the state file; read them there, never hardcode a box or IP.
@@ -127,6 +147,6 @@ Env guards (GLIBC_TUNABLES static-TLS bump, nvjitlink LD_PRELOAD) are
 
 ## Assembly and validation
 
-Use `/isaacsim:assemble` for articulation topology, scene lifecycle, collision
+Use `references/workflows/assemble/workflow.md` for articulation topology, scene lifecycle, collision
 filtering, gravity validation, and mimic verification. Keep robot-specific
 bring-up scripts, recordings, and investigation logs in the user's project.

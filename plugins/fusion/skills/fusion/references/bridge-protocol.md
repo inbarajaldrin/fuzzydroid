@@ -121,7 +121,7 @@ the CLI, which runs `scripts/export_urdf.py` (URDF) or `scripts/export_usd.py`
 All errors arrive as `{"status": "error", "message": "..."}`. Common shapes:
 
 - **Connection refused** — Fusion isn't running, or the `fusion_bridge` add-in
-  isn't loaded. Tell the user; point them at `/fusion:doctor`.
+  isn't loaded. Tell the user; point them at `workflows/doctor.md`.
 - **`{"status": "error", "message": "No active document"}`** — they need to open
   a file first.
 - **`{"status": "error", "message": "Command 'X' not recognised"}`** — typo in
@@ -142,7 +142,7 @@ All errors arrive as `{"status": "error", "message": "..."}`. Common shapes:
 ## Add-in location
 
 The bridge add-in lives at `plugins/fusion/addin/fusion_bridge/` and is symlinked
-into Fusion's AddIns directory by `/fusion:setup`:
+into Fusion's AddIns directory by `workflows/setup.md`:
 
 - macOS: `~/Library/Application Support/Autodesk/Autodesk Fusion 360/API/AddIns/fusion_bridge`
 - Windows: `%APPDATA%\Autodesk\Autodesk Fusion 360\API\AddIns\fusion_bridge`

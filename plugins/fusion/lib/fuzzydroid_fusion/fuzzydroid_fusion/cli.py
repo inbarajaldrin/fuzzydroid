@@ -301,7 +301,7 @@ def _find_plugin_scripts_dir() -> Optional[Path]:
     """Locate plugins/fusion/scripts/.
 
     Resolution order:
-      1. $CLAUDE_PLUGIN_ROOT/scripts     (set by /fusion:export slash command)
+      1. $CLAUDE_PLUGIN_ROOT/scripts     (resolved by the main Fusion skill)
       2. Walk up from this file to find a plugins/fusion/scripts directory
          (works for dev clones and marketplace cache)
     """
@@ -333,7 +333,7 @@ def _run_export_script(
         return {
             "status": "error",
             "message": "Could not locate plugins/fusion/scripts/. "
-                       "Set CLAUDE_PLUGIN_ROOT or run from /fusion:export.",
+                       "Set CLAUDE_PLUGIN_ROOT to the installed Fusion plugin directory.",
         }
     script_path = scripts_dir / script_name
     if not script_path.is_file():

@@ -7,12 +7,12 @@ description: Main entry point for Autodesk Fusion 360 work. Route natural-langua
 
 This skill works in Claude Code and Codex. Resolve symlinks on this file; the
 plugin root is three parent directories above this `SKILL.md`. Use that absolute
-root for `plugins/<plugin>/...` examples, regardless of the working directory.
-When `CLAUDE_PLUGIN_ROOT` is unavailable, pass the resolved root under that name
-to commands that use it. Use the host's equivalent tools for `Bash`, `Read`,
-`WebFetch` and user questions. In Codex, `$plugin:skill` invokes the sibling skill
-named by a `/plugin:skill` reference. Read sibling `SKILL.md` files directly when
-needed; do not assume another host's slash commands exist.
+root for plugin assets regardless of the working directory, and pass it as
+`CLAUDE_PLUGIN_ROOT` to commands that use that variable. Use the current host's
+equivalent shell, file, web, and user-input tools. Resolve links below from this
+skill directory. Within an internal workflow, resolve its `references/`,
+`scripts/`, and `evals/` from that workflow's directory; explicit
+`skills/<plugin>/...` paths start at the plugin root.
 
 # Fusion 360 Automation
 
@@ -24,26 +24,23 @@ to the right CLI command, invoke it via `Bash`, and interpret the response.
 
 Users can describe their goal in normal language. For explicit routing, the
 entry point is `/fusion:fusion` in Claude Code or `$fusion:fusion` in Codex.
-Specialist skills are optional direct entry points; the user never needs to
-invoke them separately to complete a request through this router.
+All specialist workflows are internal references loaded by this skill.
 
 ## Route internally and complete the request
 
-Resolve the plugin root from this file. For the relevant workflow, read the
-`SKILL.md` listed below from that root and follow it in the current task. These
-are instruction files to load, not commands to hand back to the user. Use the
-host's skill loader when available, or read the files with its file tools.
+Read the relevant workflow below and follow it in the current task. Load only
+the workflows needed for the request.
 
-| User goal | Load from the plugin root |
+| Goal | Internal workflow |
 |---|---|
-| Install or repair missing setup | `skills/setup/SKILL.md` |
-| Diagnose connectivity or installation health | `skills/doctor/SKILL.md` |
-| Mate parts, derive frames, or verify seating | `skills/assemble/SKILL.md` |
-| Author or repair drivable joints and mechanism coupling | `skills/rig-joints/SKILL.md` |
-| Export rigged CAD to a ROS description or view a URDF | `skills/cad-to-urdf/SKILL.md` |
-| Create modeled printable threads or verify threaded seating | `skills/printable-threads/SKILL.md` |
-| Build a docked interactive control panel and agent API | `skills/create-palette/SKILL.md` |
-| Render Fusion animation frames or videos | `skills/animation/SKILL.md` |
+| Install or repair missing setup | [setup](references/workflows/setup.md) |
+| Diagnose connectivity or installation health | [doctor](references/workflows/doctor.md) |
+| Mate parts, derive frames, or verify seating | [assemble/workflow](references/workflows/assemble/workflow.md) |
+| Author or repair drivable joints and mechanism coupling | [rig-joints/workflow](references/workflows/rig-joints/workflow.md) |
+| Export rigged CAD to a ROS description or view a URDF | [cad-to-urdf/workflow](references/workflows/cad-to-urdf/workflow.md) |
+| Create modeled printable threads or verify threaded seating | [printable-threads/workflow](references/workflows/printable-threads/workflow.md) |
+| Build a docked interactive control panel and agent API | [create-palette/workflow](references/workflows/create-palette/workflow.md) |
+| Render Fusion animation frames or videos | [animation/workflow](references/workflows/animation/workflow.md) |
 
 For simple searches, inspection, file opening, and ordinary exports, use the
 CLI routes below. Load specialist instructions before their operations, and
@@ -61,14 +58,14 @@ the missing dependency when it is unavailable rather than inventing its tools.
 ## Prerequisites (verify once per session)
 
 1. `~/.config/fuzzydroid/fusion.toml` exists → plugin is installed. Otherwise
-   load `skills/setup/SKILL.md` and follow the setup workflow.
+   load `references/workflows/setup.md` and follow the setup workflow.
 2. Fusion 360 is running with the `fusion_bridge` add-in loaded. Verify with:
    ```bash
    ~/.local/share/fuzzydroid/fusion/venv/bin/fzd-fusion --json ping
    ```
    If the response is `{"status":"ok","message":"pong",...}` → green light.
    If connection refused → tell user to open Fusion (`Shift+S → Add-Ins → Run
-   fusion_bridge`), and load `skills/doctor/SKILL.md` for a full diagnostic.
+   fusion_bridge`), and load `references/workflows/doctor.md` for a full diagnostic.
 
 ## Hard rules (non-negotiable)
 
@@ -81,7 +78,7 @@ the missing dependency when it is unavailable rather than inventing its tools.
    Never `/tmp/` unless the user explicitly asks.
 5. **Screenshots use the Fusion API** (`activeViewport.saveAsImageFile`) — the
    bridge is the authoritative path.
-6. **For any failure mode**, the diagnostic is `/fusion:doctor`. Don't try to
+6. **For any failure mode**, the diagnostic is `references/workflows/doctor.md`. Don't try to
    restart anything manually.
 
 ## Routing user intent to CLI calls
@@ -99,7 +96,7 @@ Common intent → command mappings:
 | "list the bodies / components / timeline" | `fzd-fusion --json design {bodies\|components\|timeline}` |
 | "what's the bounding box?" | `fzd-fusion --json design bbox` (reports cm) |
 | "export as STEP / STL / F3D" | `fzd-fusion --json export {step\|stl\|f3d} --path ./outputs/<name>.<ext>` |
-| "export as URDF" | `fzd-fusion --json export urdf --path ./outputs/<name>_urdf` (design prerequisites + the full workflow: `/fusion:cad-to-urdf`) |
+| "export as URDF" | `fzd-fusion --json export urdf --path ./outputs/<name>_urdf` (design prerequisites + the full workflow: `references/workflows/cad-to-urdf/workflow.md`) |
 | "convert to USD" | Two steps — export STL, then `python3 plugins/fusion/scripts/export_usd.py <stl> <usd>` |
 | "import an STL / OBJ mesh" | Write `/tmp/fusion_import_mesh.json` (units + meshes[file,name,xyz_m,rpy]), then exec `scripts/import_mesh.py`. Imports + places meshes with correct units; manipulate like any body. Use for RIGID parts. |
 | "import a URDF / robot into Fusion" | Write `/tmp/fusion_import_urdf.json` (urdf path), then exec `scripts/import_urdf.py`. For ARTICULATED inputs (real joint tree). Mesh-only bags of parts → use import_mesh instead. |
@@ -121,12 +118,12 @@ python3 plugins/fusion/viewer/urdf/serve_urdf.py <pkg_dir> --port 8090
 ```
 
 Auto-detects URDFs, generates an interactive viewer with joint sliders. Details:
-`/fusion:cad-to-urdf` `references/urdf-viewer.md`.
+`references/workflows/cad-to-urdf/workflow.md` `references/urdf-viewer.md`.
 
 ### Assemble parts clean-room (feature-derived mates)
 
 When the user wants to assemble/mate parts (gripper on robot, adapter on flange),
-verify a seat/clocking, or rebuild a suspect assembly: use `/fusion:assemble` —
+verify a seat/clocking, or rebuild a suspect assembly: use `references/workflows/assemble/workflow.md` —
 frames from B-Rep features + datasheet, placement by derived matrices in a fresh
 live-linked doc, proof by boolean-overlap + signed point checks.
 
@@ -148,7 +145,7 @@ JSON endpoints. Details: `references/robot-jog.md`.
 `fzd-fusion export urdf` wraps `scripts/export_urdf.py`. **Requires the
 Fusion design to follow the script's conventions** — a `base_link` component,
 clean component identifiers, Fusion joints. Full prerequisites and the underlying
-formulas: `/fusion:cad-to-urdf` (`references/exporter-recipe.md`).
+formulas: `references/workflows/cad-to-urdf/workflow.md` (`references/exporter-recipe.md`).
 
 ### Generate parametric CAD from a description
 
@@ -166,7 +163,7 @@ similar, follow the recipe in `references/cad-generation.md`. Summary:
 When upstream CAD ships as a single STEP with no assembly tree (hundreds of
 `Body1`, `Body2`, ... bodies in one component — AgileX Bunker Mini is the canonical
 case), `export_urdf.py` doesn't apply directly. Follow the multi-step recipe in
-`/fusion:cad-to-urdf` (`references/export-flavors.md`, Flavour B): import STEP → cluster
+`references/workflows/cad-to-urdf/workflow.md` (`references/export-flavors.md`, Flavour B): import STEP → cluster
 bodies by spatial signature → export per-link STLs → merge with `trimesh` → hand-write the URDF.
 
 ### Capture a viewport screenshot
@@ -208,11 +205,11 @@ inside any computation.
 
 ## When things break
 
-1. **Bridge unreachable** — `/fusion:doctor`. Tells you exactly which check failed.
-2. **`doctor` says "addin symlink missing"** — Fusion was reinstalled. Re-run `/fusion:setup`.
-3. **`doctor` says "pyproject drift"** — dependencies changed since setup. Re-run `/fusion:setup`.
-4. **`doctor` says "editable install: venv bound to … but plugin_root expects …"** — the venv's editable install is pointing at an old cache directory (typically after `claude plugin marketplace remove + add` swapped the source). Re-run `/fusion:setup` to rebind the venv to the current `${CLAUDE_PLUGIN_ROOT}`.
-5. **CLI says "fusion plugin is not set up"** — `/fusion:setup` was never run, or `fusion.toml` was deleted.
+1. **Bridge unreachable** — `references/workflows/doctor.md`. Tells you exactly which check failed.
+2. **`doctor` says "addin symlink missing"** — Fusion was reinstalled. Re-run `references/workflows/setup.md`.
+3. **`doctor` says "pyproject drift"** — dependencies changed since setup. Re-run `references/workflows/setup.md`.
+4. **`doctor` says "editable install: venv bound to … but plugin_root expects …"** — the venv's editable install is pointing at an old cache directory (typically after `claude plugin marketplace remove + add` swapped the source). Re-run `references/workflows/setup.md` to rebind the venv to the current `${CLAUDE_PLUGIN_ROOT}`.
+5. **CLI says "fusion plugin is not set up"** — `references/workflows/setup.md` was never run, or `fusion.toml` was deleted.
 6. **`exec_python` returns a traceback** — read it, fix the script, re-execute. Common Fusion errors: shell compute failure (use cut-extrude fallback), feature validation (reorder operations), profile not found (sketch isn't closed).
 7. **Anything else** — `https://github.com/inbarajaldrin/fuzzydroid/issues`.
 
@@ -220,8 +217,8 @@ inside any computation.
 
 - `references/cad-to-urdf.md`, `references/urdf-viewer.md` — thin pointer stubs; the
   full CAD→URDF workflow (exporter recipe, export flavours, package split, coupling
-  measurement, verification) and the browser viewer reference now live in the standalone
-  `/fusion:cad-to-urdf` skill.
+  measurement, verification) and the browser viewer reference live in
+  `references/workflows/cad-to-urdf/workflow.md`.
 - `references/cli-commands.md` — Every CLI subcommand with example invocations.
 - `references/bridge-protocol.md` — bridge wire format (UDS/TCP) and the 19 bridge commands.
   Only needed when debugging at the protocol layer.
@@ -229,31 +226,12 @@ inside any computation.
   Python → Fusion design generation. Includes the geometry-technique selection
   table and shell-fallback pattern.
 
-## Related skills (route here for specialized workflows)
-
-This plugin is multi-skill. Route to the right sibling when the task is more than a
-one-shot CLI call:
-
-- `/fusion:cad-to-urdf` — turn rigged CAD into a ROS 2 URDF description package: the
-  exporter recipe, export flavours, the Robotiq-precedent package split, coupling
-  measurement (boolean overlap, the 18.10 mm standoff), FK/mesh-identity verification,
-  and the browser viewer.
-- `/fusion:rig-joints` — author drivable joints on a CAD assembly (the Ten Laws), with
-  mechanism routes for serial arms, 4-bar/parallelogram grippers, and drag chains.
-  Its bundled mechanism references and script skeletons provide the reusable methods.
-- `/fusion:create-palette` — scaffold an interactive control panel (docked palette +
-  HTTP/JSON API) for any Fusion process; robot jog (`references/robot-jog.md`) is the
-  reference implementation.
-- `/fusion:animation` — render assembly-sequence / turntable / exploded videos as
-  ray-traced frames from a Fusion design, stitched to MP4.
-- `/fusion:printable-threads` — author modeled printable threads, reproduce a
-  BOSL2-compatible fit contract, derive seated screw poses, and validate exact
-  target clearance before STEP/STL export.
+## Continue into simulation
 
 Cross-plugin (the USD / Isaac Sim half of the pipeline):
 
-- `/isaacsim:urdf-to-usd` — import a URDF into Isaac Sim as a driven PhysX articulation.
-- `/isaacsim:animation` — author USD scene assembly-sequence animation (distinct from
-  `/fusion:animation`, which ray-traces frames inside Fusion).
-- `/isaacsim:add-physics` — author Isaac Sim collision approximations for CAD parts.
-- `/isaacsim:create-extension` — build an Isaac Sim tool/extension package.
+- `/isaacsim:isaacsim (urdf-to-usd workflow)` — import a URDF into Isaac Sim as a driven PhysX articulation.
+- `/isaacsim:isaacsim (animation workflow)` — author USD scene assembly-sequence animation (distinct from
+  `references/workflows/animation/workflow.md`, which ray-traces frames inside Fusion).
+- `/isaacsim:isaacsim (add-physics workflow)` — author Isaac Sim collision approximations for CAD parts.
+- `/isaacsim:isaacsim (create-extension workflow)` — build an Isaac Sim tool/extension package.

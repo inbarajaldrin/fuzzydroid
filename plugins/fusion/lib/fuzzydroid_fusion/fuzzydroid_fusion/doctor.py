@@ -1,6 +1,6 @@
-"""Health check for the /fusion:doctor command.
+"""Health check for the fusion doctor workflow command.
 
-Verifies every component from /fusion:setup is still healthy and prints a
+Verifies every component from fusion setup workflow is still healthy and prints a
 markdown table. Exit 0 on all-pass, 1 otherwise.
 
 The bridge check reuses core.bridge's endpoint resolution (env overrides,
@@ -65,7 +65,7 @@ def check_state_file() -> CheckResult:
         return CheckResult(
             name="state file",
             ok=False,
-            message="not found - run /fusion:setup",
+            message="not found - run fusion setup workflow",
         )
     return CheckResult(
         name="state file",
@@ -96,7 +96,7 @@ def check_addin_symlink(state: dict) -> CheckResult:
         return CheckResult(
             "addin symlink",
             False,
-            f"exists but is not a symlink: {link} - re-run /fusion:setup",
+            f"exists but is not a symlink: {link} - re-run fusion setup workflow",
         )
     return CheckResult("addin symlink", True, str(link))
 
@@ -116,7 +116,7 @@ def check_pyproject_drift(state: dict, pyproject_path: Path) -> CheckResult:
         return CheckResult(
             "pyproject.toml",
             False,
-            "dependencies changed since last setup - re-run /fusion:setup",
+            "dependencies changed since last setup - re-run fusion setup workflow",
         )
     return CheckResult("pyproject.toml", True, "no drift")
 
@@ -150,7 +150,7 @@ def check_editable_install_target(state: dict, plugin_root: Path) -> CheckResult
         return CheckResult(
             "editable install",
             False,
-            "fuzzydroid-fusion not installed in venv - run /fusion:setup",
+            "fuzzydroid-fusion not installed in venv - run fusion setup workflow",
         )
 
     direct_url = dist_info_candidates[0] / "direct_url.json"
@@ -158,7 +158,7 @@ def check_editable_install_target(state: dict, plugin_root: Path) -> CheckResult
         return CheckResult(
             "editable install",
             False,
-            "no direct_url.json in dist-info - run /fusion:setup",
+            "no direct_url.json in dist-info - run fusion setup workflow",
         )
 
     try:
@@ -184,7 +184,7 @@ def check_editable_install_target(state: dict, plugin_root: Path) -> CheckResult
         return CheckResult(
             "editable install",
             False,
-            f"venv bound to {target} but plugin_root expects {expected} - run /fusion:setup",
+            f"venv bound to {target} but plugin_root expects {expected} - run fusion setup workflow",
         )
     return CheckResult("editable install", True, "bound to current plugin cache")
 

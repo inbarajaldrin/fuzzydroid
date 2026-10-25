@@ -1,9 +1,11 @@
 # isaacsim
 
-NVIDIA Isaac Sim setup and health for robotics workstations, fuzzydroid-style:
-thin `/isaacsim:setup` + `/isaacsim:doctor` commands delegating to a bundled
-Python module, with every machine fact recorded in
-`~/.config/fuzzydroid/isaacsim.toml`.
+Control NVIDIA Isaac Sim from Claude Code or Codex. Describe your task, or use
+`/isaacsim:isaacsim` in Claude Code or `$isaacsim:isaacsim` in Codex. The main
+skill handles setup and diagnostics and loads internal workflows for URDF import,
+assembly, collision authoring, USD animation, and extension controls.
+
+Machine facts are recorded in `~/.config/fuzzydroid/isaacsim.toml`.
 
 ## What setup does
 
@@ -33,9 +35,12 @@ bridge port and `isaac-ctl status` where recorded.
 
 ## Layout
 
+```text
+skills/isaacsim/SKILL.md                       main skill and launch guards
+skills/isaacsim/references/workflows/          setup, doctor, and specialist workflows
+lib/fuzzydroid_isaacsim/                       bundled Python runtime
 ```
-commands/setup.md, doctor.md      thin command wrappers (the interactive flow)
-skills/isaacsim/SKILL.md          agent routing + guard rules
-lib/fuzzydroid_isaacsim/       bundled Python (detect / setup / ros_bridge / doctor)
-```
-\n\n> **Isaac Sim runs fully without MCP.** Extensions, UI, ROS, and standalone\n> Python are independent of the bridge; omni-kit-mcp is an optional layer that\n> adds agent access. Setup treats it as a distinct, skippable step.\n
+
+Isaac Sim runs fully without MCP. Extensions, UI, ROS, and standalone Python
+are independent of the bridge; omni-kit-mcp is an optional layer that adds agent
+access. Setup treats it as a distinct, skippable step.

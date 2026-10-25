@@ -1,4 +1,4 @@
-"""Recorder for /isaaclab:setup — non-interactive by design.
+"""Recorder for isaaclab setup workflow — non-interactive by design.
 
 The setup COMMAND owns the interactive flow (delegating the install itself to
 the official live docs at https://isaac-sim.github.io/IsaacLab, running
@@ -63,12 +63,12 @@ def main() -> int:
     if not c.is_uv_available():
         print("uv is not installed. Install it first:\n"
               "  curl -LsSf https://astral.sh/uv/install.sh | sh\n"
-              "Then re-run /isaaclab:setup.")
+              "Then re-run isaaclab setup workflow.")
         return 1
 
     plugin_root = (os.environ.get("CLAUDE_PLUGIN_ROOT") or os.environ.get("PLUGIN_ROOT"))
     if not plugin_root:
-        print("CLAUDE_PLUGIN_ROOT is not set — run this via /isaaclab:setup, not directly.")
+        print("CLAUDE_PLUGIN_ROOT is not set — run this via isaaclab setup workflow, not directly.")
         return 1
     package_path = Path(plugin_root) / "lib" / "fuzzydroid_isaaclab"
 
@@ -131,7 +131,7 @@ def main() -> int:
 
     c.save_state(PLUGIN_NAME, state)
     print(f"state written: {c.state_file(PLUGIN_NAME)}")
-    print("run /isaaclab:doctor to verify.")
+    print("run isaaclab doctor workflow to verify.")
     return 0
 
 

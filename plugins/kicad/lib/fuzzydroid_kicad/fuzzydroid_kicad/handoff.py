@@ -47,7 +47,7 @@ def fusion_cli() -> Path:
         executable = python.with_name(name + extension)
         if executable.is_file():
             return executable
-    raise FileNotFoundError("Run /fusion:setup before importing the PCB")
+    raise FileNotFoundError("Run fusion setup workflow before importing the PCB")
 
 
 def run(

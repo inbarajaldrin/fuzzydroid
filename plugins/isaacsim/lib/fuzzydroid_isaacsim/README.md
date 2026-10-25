@@ -10,4 +10,4 @@ Bundled Python for the fuzzydroid `isaacsim` plugin. Stdlib only.
 | `fuzzydroid_isaacsim.doctor` | state-file-driven health table; absent components read N/A, never FAIL |
 
 Run via `uv run --with-editable . python -m fuzzydroid_isaacsim.<module>`;
-the `/isaacsim:setup` and `/isaacsim:doctor` commands do this for you.
+the `../../skills/isaacsim/references/workflows/setup.md` and `../../skills/isaacsim/references/workflows/doctor.md` commands do this for you.

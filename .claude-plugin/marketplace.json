@@ -31,7 +31,7 @@
     {
       "name": "kicad",
       "source": "./plugins/kicad",
-      "description": "Live KiCad PCB automation through official IPC and an embedded main-thread bridge; shared CLI, MCP and native tool panel.",
+      "description": "Control the running KiCad PCB Editor—inspect and edit boards, load footprints and 3D models, and export designs.",
       "author": {
         "name": "Aldrin Inbaraj"
       },

@@ -20,8 +20,40 @@ from pathlib import Path
 from sync_plugins import ROOT, generated_files
 
 
+def check_plugin_layout(name: str, directory: Path) -> list[str]:
+    """Keep host discovery to one entry point and verify its local links."""
+    errors = []
+    main = directory / "skills" / name / "SKILL.md"
+    actual = set(directory.rglob("SKILL.md"))
+    if actual != {main}:
+        errors.append(
+            f"{name}: expected only skills/{name}/SKILL.md; found "
+            + ", ".join(str(p.relative_to(directory)) for p in sorted(actual))
+        )
+    if any((directory / "commands").rglob("*.md")):
+        errors.append(
+            f"{name}: commands/ exposes extra Claude entry points; use internal workflows"
+        )
+    if main.is_file():
+        text = main.read_text()
+        if not re.search(rf"^name: {re.escape(name)}$", text, re.MULTILINE):
+            errors.append(f"{name}: main skill name must match the plugin")
+        for target in re.findall(r"\[[^\]]+\]\(([^)]+)\)", text):
+            if re.match(r"[a-zA-Z][a-zA-Z0-9+.-]*:", target) or target.startswith("#"):
+                continue
+            path = (main.parent / target.split("#", 1)[0]).resolve()
+            if not path.is_relative_to(directory.resolve()) or not path.is_file():
+                errors.append(
+                    f"{name}: missing or external internal reference: {target}"
+                )
+    return errors
+
+
 def check_files() -> list[str]:
     errors = []
+    catalog = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
+    for entry in catalog["plugins"]:
+        errors.extend(check_plugin_layout(entry["name"], ROOT / entry["source"]))
     for path, expected in generated_files().items():
         if not path.is_file() or path.read_text() != expected:
             errors.append(f"{path.relative_to(ROOT)}: run tools/sync_plugins.py")
@@ -130,10 +162,7 @@ def check_codex() -> None:
                     {"marketplacePath": marketplace["path"], "pluginName": name},
                 )["plugin"]
                 directory = ROOT / entry["source"]
-                expected = {
-                    f"{name}:{p.parent.name}"
-                    for p in (directory / "skills").glob("*/SKILL.md")
-                }
+                expected = {f"{name}:{name}"}
                 actual = {s["name"] for s in plugin["skills"]}
                 if actual != expected:
                     raise RuntimeError(

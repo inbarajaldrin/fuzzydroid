@@ -1,4 +1,4 @@
-"""Orchestrator for the /fusion:setup command.
+"""Orchestrator for the fusion setup workflow command.
 
 Runs the 9-step flow:
   1. Detect platform (abort on Linux).
@@ -116,7 +116,7 @@ def run_setup(
             "uv is not installed. Install it first:\n"
             "  macOS: curl -LsSf https://astral.sh/uv/install.sh | sh\n"
             "  Windows: powershell -c \"irm https://astral.sh/uv/install.ps1 | iex\"\n"
-            "Then re-run /fusion:setup."
+            "Then re-run fusion setup workflow."
         )
         log.error("uv not found")
         print(msg)
@@ -152,7 +152,7 @@ def run_setup(
     if not addins_dir.parent.exists():
         msg = (
             f"Fusion 360 Add-Ins directory parent does not exist: {addins_dir.parent}\n"
-            "Is Autodesk Fusion 360 installed? Install it first, then re-run /fusion:setup."
+            "Is Autodesk Fusion 360 installed? Install it first, then re-run fusion setup workflow."
         )
         log.error("Fusion 360 not detected")
         print(msg)
@@ -198,7 +198,7 @@ def run_setup(
     print("4. Find 'fusion_bridge' in the list")
     print("5. Click 'Run' and check 'Run on Startup'")
     print()
-    print("Then run /fusion:doctor to verify everything is working.")
+    print("Then run fusion doctor workflow to verify everything is working.")
     print("=" * 60)
 
     return SetupResult(ok=True, message="Setup complete", state_path=state_path)
@@ -208,7 +208,7 @@ def main() -> int:
     """Entry point for `python -m fuzzydroid_fusion.setup`."""
     plugin_root_str = (os.environ.get("CLAUDE_PLUGIN_ROOT") or os.environ.get("PLUGIN_ROOT"))
     if not plugin_root_str:
-        print("CLAUDE_PLUGIN_ROOT is not set - run this via /fusion:setup, not directly.")
+        print("CLAUDE_PLUGIN_ROOT is not set - run this via fusion setup workflow, not directly.")
         return 1
     plugin_root = Path(plugin_root_str)
     result = run_setup(plugin_root=plugin_root)

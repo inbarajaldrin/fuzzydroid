@@ -7,31 +7,30 @@ description: Main entry point for KiCad work. Handle setup, diagnostics, live PC
 
 This skill works in Claude Code and Codex. Resolve symlinks on this file; the
 plugin root is three parent directories above this `SKILL.md`. Use that absolute
-root for `plugins/<plugin>/...` examples, regardless of the working directory.
-When `CLAUDE_PLUGIN_ROOT` is unavailable, pass the resolved root under that name
-to commands that use it. Use the host's equivalent tools for `Bash`, `Read`,
-`WebFetch` and user questions. In Codex, `$plugin:skill` invokes the sibling skill
-named by a `/plugin:skill` reference. Read sibling `SKILL.md` files directly when
-needed; do not assume another host's slash commands exist.
+root for plugin assets regardless of the working directory, and pass it as
+`CLAUDE_PLUGIN_ROOT` to commands that use that variable. Use the current host's
+equivalent shell, file, web, and user-input tools. Resolve links below from this
+skill directory. Within an internal workflow, resolve its `references/`,
+`scripts/`, and `evals/` from that workflow's directory; explicit
+`skills/<plugin>/...` paths start at the plugin root.
 
 # KiCad automation
 
 Drive the installed `fzd-kicad` CLI or equivalent MCP tools. Users describe the
 goal in normal language; the explicit entry point is `/kicad:kicad` in Claude
 Code or `$kicad:kicad` in Codex. Handle setup, health checks, editing, verification,
-and exports within the same task. Separate setup and doctor skills remain
-optional direct entry points, not required user handoffs.
+and exports within the same task. Setup and doctor are internal workflows loaded by this skill.
 
 ## Route internally and establish readiness
 
 Resolve the plugin root from this file and read the relevant workflow yourself.
-Use the host's skill loader when available, or read the files with its file tools.
+Read internal workflows with the host's file tools.
 Do not stop after naming another skill or ask the user to invoke it.
 
-| Situation or goal | Workflow to load |
+| Goal | Internal workflow |
 |---|---|
-| First use, missing state/venv, or launcher reports another checkout | `skills/setup/SKILL.md` from the plugin root |
-| Diagnose installation, connectivity, decoding, dependency drift, or stale bridge code | `skills/doctor/SKILL.md` from the plugin root |
+| First use, missing state/venv, or launcher reports another checkout | [setup](references/workflows/setup.md) |
+| Diagnose installation, connectivity, decoding, or dependency drift | [doctor](references/workflows/doctor.md) |
 | Inspect or edit the active PCB, add footprints/models, or operate native tools | Discover schemas and use the control paths below |
 | Render or export a live board snapshot | `ipc.export` using its discovered schema |
 | Generate fabrication files or hand the PCB model to Fusion | `references/handoff.md` relative to this skill |
@@ -128,7 +127,7 @@ Project tools register through the public contract described in
 be small composable tools, not duplicated UI-only handlers.
 
 On connection, decoding, stale-source, or installation failures, load
-`skills/doctor/SKILL.md` from the plugin root and follow it within the task.
+`references/workflows/doctor.md` from the plugin root and follow it within the task.
 Detailed version boundaries, setup behavior and the tested workflow are in
 [references/compatibility.md](references/compatibility.md).
 

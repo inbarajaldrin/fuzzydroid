@@ -6,7 +6,7 @@ Docks as a palette INSIDE Fusion and is simultaneously a normal web page and a
 JSON API for agents. Lives in `plugins/fusion/jog/` (own README there).
 
 Robot jog is the reference implementation of the palette pattern. To scaffold a
-NEW panel for some other Fusion process, use `/fusion:create-palette`.
+NEW panel for some other Fusion process, use `workflows/create-palette/workflow.md`.
 
 ## When to use
 

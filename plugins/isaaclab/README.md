@@ -1,16 +1,18 @@
 # isaaclab
 
-Isaac Lab setup, health, and project scaffolding, fuzzydroid-style: thin
-commands delegating to a bundled Python module, with every machine fact
-recorded in `~/.config/fuzzydroid/isaaclab.toml`.
+Isaac Lab setup, health, project scaffolding, and bridge launches from Claude
+Code or Codex. Machine facts are recorded in `~/.config/fuzzydroid/isaaclab.toml`.
 
-## Commands
+## Main skill
 
-| command | what it does |
+Describe your task, or use `/isaaclab:isaaclab` in Claude Code or
+`$isaaclab:isaaclab` in Codex. The agent selects the internal workflow:
+
+| Workflow | Purpose |
 |---|---|
-| `/isaaclab:setup` | delegates the install to the [official live docs](https://isaac-sim.github.io/IsaacLab), detects existing installs (pip venv or source checkout — never assuming `env_isaaclab`), records the confirmed choice + the omni-kit-mcp checkout |
-| `/isaaclab:new-project` | clones [isaac-sim/IsaacLabExtensionTemplate](https://github.com/isaac-sim/IsaacLabExtensionTemplate) at a pinned commit (upstream has no tags), follows the template's own README, and drops in omni-kit-mcp's `examples/isaaclab_bridge_launch.py` fetched from its repo at invocation time |
-| `/isaaclab:doctor` | state-file-driven health table; absent components read N/A, never FAIL; actively FAILs the static-TLS guard-rule violation |
+| Setup | Follow live official installation docs, detect existing pip/source installs, and record the selected install and bridge checkout. |
+| New project | Scaffold from the pinned IsaacLabExtensionTemplate and fetch the bridge launch example from its source. |
+| Doctor | Check recorded installation health and detect launch guard violations. |
 
 ## The launch shape and the guard rule
 
@@ -22,9 +24,9 @@ connected-but-broken state with no error message.
 
 ## Layout
 
-```
-commands/setup.md, doctor.md, new-project.md   thin command wrappers
-skills/isaaclab/SKILL.md                       agent routing + symptom map
-skills/isaaclab/references/bridge-launch.md    canonical launch shape + traps
-lib/fuzzydroid_isaaclab/                    bundled Python (detect / setup / doctor)
+```text
+skills/isaaclab/SKILL.md                       main skill and symptom map
+skills/isaaclab/references/workflows/          setup, doctor, and new-project workflows
+skills/isaaclab/references/bridge-launch.md    canonical launch shape and traps
+lib/fuzzydroid_isaaclab/                       bundled Python runtime
 ```

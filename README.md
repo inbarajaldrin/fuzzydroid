@@ -7,8 +7,8 @@ An AI agent plugin marketplace for robotics developers using Claude Code or Code
 | Plugin | Description |
 |---|---|
 | [`fusion`](plugins/fusion/) | Control Autodesk Fusion 360—search projects, open files, export STEP/STL/URDF, and run Python scripts inside Fusion. |
-| [`kicad`](plugins/kicad/) | Live KiCad PCB control, component models, fabrication exports, and Fusion handoff (preview) |
-| [`robodocs`](plugins/robodocs/) | Live-fetched docs for the robotics stack — LeRobot + the NVIDIA Physical-AI suite (Isaac, GR00T, Cosmos, Warp, Omniverse, OpenUSD) |
+| [`kicad`](plugins/kicad/) | Control the running KiCad PCB Editor—inspect and edit boards, load footprints and 3D models, and export designs. |
+| [`robodocs`](plugins/robodocs/) | Live-fetched docs for the robotics stack — LeRobot, MuJoCo, and the NVIDIA Physical-AI suite (Isaac, GR00T, Cosmos, Warp, Omniverse, OpenUSD) |
 | [`isaacsim`](plugins/isaacsim/) | NVIDIA Isaac Sim setup + health — detects existing installs, registers the omni.kit.mcp bridge, persistent ROS 2 bridge enable, native Isaac Viewer on macOS |
 | [`isaaclab`](plugins/isaaclab/) | Isaac Lab setup, health, and project scaffolding — pinned-template projects with bridge+livestream launch support |
 
@@ -23,11 +23,11 @@ In Claude Code:
 Then install the plugins you want:
 
 ```
-/plugin install fusion@fuzzydroid       # see plugins/fusion/README.md for setup
-/plugin install kicad@fuzzydroid        # then /kicad:setup
-/plugin install robodocs@fuzzydroid     # robotics documentation skills
-/plugin install isaacsim@fuzzydroid     # then /isaacsim:setup
-/plugin install isaaclab@fuzzydroid     # then /isaaclab:setup
+/plugin install fusion@fuzzydroid
+/plugin install kicad@fuzzydroid
+/plugin install robodocs@fuzzydroid
+/plugin install isaacsim@fuzzydroid
+/plugin install isaaclab@fuzzydroid
 ```
 
 In Codex CLI:
@@ -41,15 +41,11 @@ codex plugin add isaacsim@fuzzydroid
 codex plugin add isaaclab@fuzzydroid
 ```
 
-Install whichever plugins you need, then start a new session. Ask Codex to use
-`$fusion:setup`, `$isaacsim:setup`, `$isaaclab:setup`, or `$kicad:setup`, followed
-by the matching `$plugin:doctor`. RoboDocs needs no setup: invoke
-`$robodocs:lerobot`, `$robodocs:mujoco`, or `$robodocs:nvidia`.
+Install the plugins you need, then start a new session in Claude Code or Codex
+and describe your task. Your agent handles setup and diagnostics as needed.
+RoboDocs needs no local setup.
 
-Each plugin bundles both host manifests and shares the same skills, scripts,
-and Python package. See [docs/CONVENTIONS.md](docs/CONVENTIONS.md) for portability
-and [the OpenAI plugin documentation](https://developers.openai.com/plugins/build/plugins)
-for Codex marketplace support.
+Each plugin exposes one main skill that loads its internal workflows as needed.
 
 ## Requirements
 
