@@ -10,7 +10,7 @@ import adsk.core, adsk.fusion, os, json, traceback
 # ═══════════════════════════════════════════════
 # CONFIGURATION — set these before running
 # ═══════════════════════════════════════════════
-OUTPUT_DIR = ''        # REQUIRED: e.g. '/path/to/outputs/base3_urdf'
+OUTPUT_DIR = ''        # REQUIRED: e.g. '/path/to/outputs/widget_urdf'
 OBJECT_NAME = None     # None = auto-detect from document name
 # ═══════════════════════════════════════════════
 

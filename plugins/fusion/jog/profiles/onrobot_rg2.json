@@ -1,0 +1,35 @@
+{
+  "name": "onrobot_rg2",
+  "title": "RG2 Gripper",
+  "kind": "gripper",
+  "match": {
+    "any_of_joints": [
+      "rg2_gripper"
+    ],
+    "min_matches": 1
+  },
+  "drive": {
+    "fusion_match": "rg2_gripper_joint",
+    "note": "fusion_rad = sign * model_rad + offset. Since the rg2 v27 rig-at-zero rebuild the CAD drive IS theta_model (re-derived by sweep+arc-fit: slope 1.0, offset <1e-4 deg, dLR 5e-6 deg). Fusion snaps commanded drive values to a 0.05 deg grid (display-side only, <=0.025 deg). The old v26 mapping was sign -1 / offset 17.95.",
+    "sign": 1,
+    "offset_deg": 0.0,
+    "open_model_rad": 0.77308,
+    "closed_model_rad": -0.452
+  },
+  "width": {
+    "model": "rg2_arc",
+    "note": "raw_mm (Modbus reg 267 / datasheet) = amp*sin(alpha0 + theta_model) + raw_offset; width-with-offset (reg 275 / pad gap) = raw - 2*tip_offset. Source: hardware/rg2.successor.yaml (live-firmware-confirmed).",
+    "alpha0_deg": 27.95,
+    "amp_mm": 110.0,
+    "raw_offset_mm": 5.24,
+    "tip_offset_mm": 4.6
+  },
+  "passive_matches": [
+    "rg2_l_finger",
+    "rg2_r_finger",
+    "rg2_l_bumper",
+    "rg2_r_bumper",
+    "rg2_l_cover",
+    "rg2_r_cover"
+  ]
+}

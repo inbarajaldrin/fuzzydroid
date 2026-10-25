@@ -226,7 +226,7 @@ if [ -z "$VENV_PYTHON" ]; then
 fi
 
 printf 'exec(open("/tmp/f360_design.py").read())' \
-  | "$VENV_PYTHON" -m fuzzydroid.fusion.cli --json exec -
+  | "$VENV_PYTHON" -m fuzzydroid_fusion.cli --json exec -
 ```
 
 ## Step 4: Show the result

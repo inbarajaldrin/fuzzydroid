@@ -47,6 +47,17 @@ derivative-work relationship.
 - Referenced at runtime (loaded from unpkg, not bundled) by
   `plugins/fusion/viewer/usd/serve_usd.py` — this usage does not redistribute
   Three.js, but it is listed here for completeness.
+- `plugins/fusion/viewer/urdf/viewer/assets/vendor/three.module.js` — r169,
+  redistributed for the viewer overlay with `THREE-LICENSE.txt` beside it.
+
+## three-mesh-bvh
+
+**Source:** https://github.com/gkjohnson/three-mesh-bvh
+**Copyright:** Copyright (c) 2018 Garrett Johnson
+**License:** MIT
+**Used in:** `plugins/fusion/viewer/urdf/viewer/assets/vendor/three-mesh-bvh.module.js`
+for viewer collision/pruning queries. The upstream license is included beside
+the module as `THREE-MESH-BVH-LICENSE.txt`.
 
 ## Autodesk Fusion 360 Python API Stubs
 
@@ -54,6 +65,33 @@ derivative-work relationship.
 **License:** Autodesk (internal development use)
 **Used in:**
 - Not shipped to end users. Used as IDE autocomplete aid during development only. Will NOT be included in the installable plugin.
+
+## KiCad Python IPC bindings
+
+**Source:** https://gitlab.com/kicad/code/kicad-python
+**License:** MIT
+**Used in:** `plugins/kicad/` installs and imports the official `kicad-python`
+package. Setup can build the revision-pinned stable source for KiCad 10.0.7.
+The upstream archives and generated dependency remain outside this repository;
+upstream headers are retained. The plugin's bridge and tool registry are original
+implementations, not copies of another MCP server.
+
+## MCP Python SDK
+
+**Source:** https://github.com/modelcontextprotocol/python-sdk
+**License:** MIT
+**Used in:** `plugins/kicad/` installs the SDK as a dependency for its stdio MCP
+adapter. SDK code is not vendored in the plugin.
+
+## Copyleft dependencies: KiCad runtime
+
+**Source:** https://gitlab.com/kicad/code/kicad
+**License:** See KiCad's upstream GPL licensing and file headers.
+**Scope:** The plugin talks to an installed KiCad application through IPC and,
+on KiCad 10, its installed SWIG bindings. No KiCad binary or SWIG implementation
+is bundled. Setup retrieves a checksum-verified API-proto subtree as an input to
+the official IPC bindings build; those upstream files retain their headers and
+are not committed or shipped inside the plugin package.
 
 ---
 

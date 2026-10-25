@@ -1,4 +1,6 @@
-"""TCP Server command — starts a JSON TCP server on localhost:8765.
+"""Bridge server command — serves newline-delimited JSON on a Unix domain socket
+(macOS/Linux: ~/.config/fuzzydroid/fusion_bridge.sock) or TCP 127.0.0.1:8765-8775
+(Windows). Endpoint advertised in ~/.config/fuzzydroid/fusion_bridge.json.
 
 All commands are marshaled to Fusion's main UI thread via CustomEvent,
 making it safe to call any Fusion API (including documents.open()).
@@ -54,22 +56,30 @@ TIMER_INTERVAL = 0.2  # 200ms backup timer
 # Port range: try 8765-8775 (Chrome DevToolsActivePort pattern)
 PORT_RANGE_START = 8765
 PORT_RANGE_END = 8775
-DISCOVERY_FILE_NAME = 'fusion_bridge.port'
 
 
-# ── Port Discovery ────────────────────────────────────────────────────────────
+# ── Endpoint Discovery ───────────────────────────────────────────────────────
+#
+# The bridge advertises its live endpoint in a JSON discovery file:
+#   {"transport": "uds", "path": "...", "pid": ...}      (macOS/Linux)
+#   {"transport": "tcp", "host": "...", "port": N, "pid": ...}   (Windows)
 
 
-def _get_discovery_file_path():
-    """Return the path to the port discovery file.
-    macOS: ~/.config/fuzzydroid/fusion_bridge.port
-    Windows: %APPDATA%/fuzzydroid/fusion_bridge.port
-    """
+def _config_dir():
+    """fuzzydroid per-user config dir (state files, discovery, socket)."""
     if os.name == 'nt':
         base = Path(os.environ.get('APPDATA', Path.home() / 'AppData' / 'Roaming'))
     else:
         base = Path.home() / '.config'
-    return base / 'fuzzydroid' / DISCOVERY_FILE_NAME
+    return base / 'fuzzydroid'
+
+
+def _discovery_json_path():
+    return _config_dir() / 'fusion_bridge.json'
+
+
+def _uds_path():
+    return _config_dir() / 'fusion_bridge.sock'
 
 
 def _bind_with_fallback(server_socket, host='127.0.0.1'):
@@ -85,27 +95,44 @@ def _bind_with_fallback(server_socket, host='127.0.0.1'):
     raise OSError(f'All ports {PORT_RANGE_START}-{PORT_RANGE_END} are in use')
 
 
-def _write_discovery_file(port):
-    """Write the chosen port to the discovery file so clients can find us."""
-    path = _get_discovery_file_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(str(port) + '\n')
-
-
-def _cleanup_discovery_file():
-    """Remove the discovery file on shutdown."""
+def _write_discovery(info):
+    """Write the JSON discovery file describing the live endpoint."""
     try:
-        _get_discovery_file_path().unlink(missing_ok=True)
+        path = _discovery_json_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        info = dict(info)
+        info['pid'] = os.getpid()
+        path.write_text(json.dumps(info) + '\n')
     except Exception:
         pass
+
+
+def _cleanup_discovery_files():
+    """Remove only endpoints advertised by this process, never another bridge."""
+    try:
+        info = json.loads(_discovery_json_path().read_text())
+        if info.get('pid') != os.getpid():
+            return
+    except (OSError, ValueError, AttributeError):
+        return
+    for p in (_discovery_json_path(), _uds_path()):
+        try:
+            p.unlink(missing_ok=True)
+        except Exception:
+            pass
 
 # ── State ────────────────────────────────────────────────────────────────────
 
 _BRIDGE_ENV_KEY = '_FUZZYDROID_BRIDGE_STARTED'
 _stop_flag = False
-_server_thread = None
-_server_socket = None
+_server_threads = []
+_server_sockets = []
 _timer_thread = None
+
+# Seconds between bind retries when a listener can't come up. The server
+# thread NEVER exits on bind failure — a transient port/socket squatter must
+# cost seconds of retry, not a Fusion restart.
+BIND_RETRY_INTERVAL = 10.0
 _custom_event = None
 _event_handler = None
 _work_queue = queue.Queue()
@@ -173,7 +200,7 @@ def _dispatch_to_main_thread(data, timeout=300):
     # Fast path: ping doesn't need main thread
     cmd = data.get('cmd', '')
     if cmd == 'ping':
-        return {'status': 'ok', 'message': 'pong', 'pid': os.getpid()}
+        return {'status': 'ok', 'message': 'pong', 'bridge': 'fusion_bridge', 'pid': os.getpid()}
 
     item = WorkItem(data)
     _work_queue.put(item)
@@ -210,8 +237,8 @@ def _timer_loop():
 
 
 def start():
-    """Called when the add-in starts (MAIN THREAD). Registers event + launches TCP server."""
-    global _stop_flag, _server_thread, _timer_thread, _custom_event, _event_handler
+    """Called when the add-in starts (MAIN THREAD). Registers event + launches listeners."""
+    global _stop_flag, _timer_thread, _custom_event, _event_handler
 
     if os.environ.get(_BRIDGE_ENV_KEY):
         if config.DEBUG:
@@ -232,11 +259,18 @@ def start():
     _timer_thread = threading.Thread(target=_timer_loop, daemon=True)
     _timer_thread.start()
 
-    # Start TCP server thread
-    _server_thread = threading.Thread(target=_tcp_server, daemon=True)
-    _server_thread.start()
-
-    futil.log(f'Fusion Bridge: TCP server starting (port range {PORT_RANGE_START}-{PORT_RANGE_END})', force_console=True)
+    # One listener per platform: Unix domain socket on macOS/Linux (no port
+    # contention possible), TCP on Windows. The loop is a supervisor — bind
+    # failures retry forever, never exit.
+    if os.name != 'nt':
+        t = threading.Thread(target=_uds_server_loop, daemon=True)
+        futil.log('Fusion Bridge: starting (uds)', force_console=True)
+    else:
+        t = threading.Thread(target=_tcp_server_loop, daemon=True)
+        futil.log(f'Fusion Bridge: starting (tcp range {PORT_RANGE_START}-{PORT_RANGE_END})',
+                  force_console=True)
+    t.start()
+    _server_threads.append(t)
 
 
 def stop():
@@ -260,40 +294,26 @@ def stop():
 
     _handlers.clear()
 
-    # Close server socket
-    if _server_socket:
+    # Close all server sockets
+    for srv in _server_sockets:
         try:
-            _server_socket.close()
+            srv.close()
         except:
             pass
+    _server_sockets.clear()
+    _server_threads.clear()
 
-    # Remove discovery file
-    _cleanup_discovery_file()
+    # Remove discovery + socket files
+    _cleanup_discovery_files()
 
-    futil.log('Fusion Bridge: TCP server stopped')
-
-
-# ── TCP Server ───────────────────────────────────────────────────────────────
+    futil.log('Fusion Bridge: server stopped')
 
 
-def _tcp_server():
-    """Run TCP server in a background thread."""
-    global _stop_flag, _server_socket
+# ── Listeners (supervisor loops — never exit on bind failure) ────────────────
 
-    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    srv.settimeout(1.0)
-    _server_socket = srv
 
-    try:
-        port = _bind_with_fallback(srv, config.HOST)
-        srv.listen(5)
-        _write_discovery_file(port)
-        futil.log(f'Fusion Bridge: listening on {config.HOST}:{port}', force_console=True)
-    except Exception as e:
-        futil.log(f'Fusion Bridge: failed to bind — {e}', adsk.core.LogLevels.ErrorLogLevel, force_console=True)
-        return
-
+def _accept_loop(srv, describe):
+    """Accept clients until stop or socket death. Returns on socket error."""
     while not _stop_flag:
         try:
             conn, addr = srv.accept()
@@ -301,11 +321,86 @@ def _tcp_server():
             t.start()
         except socket.timeout:
             continue
-        except Exception:
+        except OSError:
             if not _stop_flag:
-                pass
+                futil.log(f'Fusion Bridge: {describe} listener died, will rebind',
+                          force_console=True)
+            return
 
-    srv.close()
+
+def _uds_server_loop():
+    """Serve on a Unix domain socket (macOS/Linux). Supervised: bind failures
+    and listener deaths retry every BIND_RETRY_INTERVAL seconds forever."""
+    while not _stop_flag:
+        sock_path = _uds_path()
+        srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        srv.settimeout(1.0)
+        try:
+            sock_path.parent.mkdir(parents=True, exist_ok=True)
+            if sock_path.exists():
+                # Stale socket from a crashed bridge, or a live one from another
+                # Fusion instance. Probe: connectable means live — leave it alone
+                # and keep retrying until that instance exits.
+                probe = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                probe.settimeout(0.5)
+                try:
+                    probe.connect(str(sock_path))
+                    probe.close()
+                    raise OSError('another live bridge owns the socket')
+                except (ConnectionRefusedError, FileNotFoundError):
+                    sock_path.unlink(missing_ok=True)  # stale — reclaim
+                finally:
+                    try:
+                        probe.close()
+                    except OSError:
+                        pass
+            srv.bind(str(sock_path))
+            sock_path.chmod(0o600)
+            srv.listen(5)
+            _server_sockets.append(srv)
+            _write_discovery({'transport': 'uds', 'path': str(sock_path)})
+            futil.log(f'Fusion Bridge: listening on uds:{sock_path}', force_console=True)
+            _accept_loop(srv, 'uds')
+        except Exception as e:
+            futil.log(f'Fusion Bridge: uds bind failed ({e}) — retrying in '
+                      f'{BIND_RETRY_INTERVAL:.0f}s', force_console=True)
+        finally:
+            try:
+                srv.close()
+            except OSError:
+                pass
+            if srv in _server_sockets:
+                _server_sockets.remove(srv)
+        if not _stop_flag:
+            time.sleep(BIND_RETRY_INTERVAL)
+
+
+def _tcp_server_loop():
+    """Serve on TCP 127.0.0.1 (ports 8765-8775) — the Windows endpoint.
+    Supervised like the UDS loop."""
+    while not _stop_flag:
+        srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        srv.settimeout(1.0)
+        try:
+            port = _bind_with_fallback(srv, config.HOST)
+            srv.listen(5)
+            _server_sockets.append(srv)
+            _write_discovery({'transport': 'tcp', 'host': config.HOST, 'port': port})
+            futil.log(f'Fusion Bridge: listening on {config.HOST}:{port}', force_console=True)
+            _accept_loop(srv, 'tcp')
+        except Exception as e:
+            futil.log(f'Fusion Bridge: tcp bind failed ({e}) — retrying in '
+                      f'{BIND_RETRY_INTERVAL:.0f}s', force_console=True)
+        finally:
+            try:
+                srv.close()
+            except OSError:
+                pass
+            if srv in _server_sockets:
+                _server_sockets.remove(srv)
+        if not _stop_flag:
+            time.sleep(BIND_RETRY_INTERVAL)
 
 
 def _handle_client(conn, addr):
@@ -349,7 +444,7 @@ def _handle_command(data):
     cmd = data.get('cmd', '')
     try:
         if cmd == 'ping':
-            return {'status': 'ok', 'message': 'pong', 'pid': os.getpid()}
+            return {'status': 'ok', 'message': 'pong', 'bridge': 'fusion_bridge', 'pid': os.getpid()}
         elif cmd == 'get_document':
             return _cmd_get_document()
         elif cmd == 'list_projects':

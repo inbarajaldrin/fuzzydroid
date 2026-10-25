@@ -3,9 +3,9 @@
 Usage: Set PROJECT_NAME and FILE_PATH before executing.
 FILE_PATH is a list of folder names leading to the file, then the filename.
 
-Example: To open Default Project > UR5 > FMB > board3 > base3:
+Example: To open Default Project > MyProject > parts > widget:
   PROJECT_NAME = "Default Project"
-  FILE_PATH = ["UR5", "FMB", "board3", "base3"]
+  FILE_PATH = ["MyProject", "parts", "widget"]
 
 Execute in Fusion's TEXT COMMANDS (Python mode):
   exec(open('/path/to/open_file.py').read())
@@ -13,7 +13,7 @@ Execute in Fusion's TEXT COMMANDS (Python mode):
 import adsk.core
 
 PROJECT_NAME = "Default Project"  # <-- Set this
-FILE_PATH = ["UR5", "FMB", "board3", "base3"]  # <-- folders + filename
+FILE_PATH = ["MyProject", "widget"]  # <-- folders + filename
 
 app = adsk.core.Application.get()
 

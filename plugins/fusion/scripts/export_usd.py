@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Reusable STL → USD converter with color material.
+Reusable STL -> USD converter with color material.
 
 Usage:
     python3 export_usd.py <stl_path> <output.usda> [--color R G B] [--scale S] [--name NAME]
 
     --color R G B   : RGB floats 0-1 (default: 0.5 0.5 0.5)
-    --scale S       : uniform scale factor (default: 0.001 for mm→m)
+    --scale S       : uniform scale factor (default: 0.001 for mm->m)
     --name NAME     : object name in USD stage (default: from filename)
 
 Examples:
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     parser.add_argument('output', help='Output USD file (.usda or .usdc)')
     parser.add_argument('--color', nargs=3, type=float, default=[0.5, 0.5, 0.5],
                         metavar=('R', 'G', 'B'), help='RGB color (0-1)')
-    parser.add_argument('--scale', type=float, default=0.001, help='Scale factor (default: 0.001 mm→m)')
+    parser.add_argument('--scale', type=float, default=0.001, help='Scale factor (default: 0.001 mm->m)')
     parser.add_argument('--name', type=str, default=None, help='Object name in USD')
     args = parser.parse_args()
 

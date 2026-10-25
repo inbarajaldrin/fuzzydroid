@@ -1,0 +1,22 @@
+{
+  "name": "ur5e",
+  "title": "UR5e",
+  "kind": "arm",
+  "match": {
+    "any_of_joints": ["shoulder_pan", "shoulder_lift", "elbow", "wrist_1", "wrist_2", "wrist_3"],
+    "min_matches": 4
+  },
+  "joints": [
+    {"id": "shoulder_pan_joint",  "fusion_match": "shoulder_pan",  "label": "Shoulder pan",  "sign": 1, "offset_deg": 0.0, "min_deg": -360, "max_deg": 360, "home_deg": 0},
+    {"id": "shoulder_lift_joint", "fusion_match": "shoulder_lift", "label": "Shoulder lift", "sign": 1, "offset_deg": 0.0, "min_deg": -360, "max_deg": 360, "home_deg": 0},
+    {"id": "elbow_joint",         "fusion_match": "elbow",         "label": "Elbow",         "sign": 1, "offset_deg": 0.0, "min_deg": -180, "max_deg": 180, "home_deg": 0},
+    {"id": "wrist_1_joint",       "fusion_match": "wrist_1",       "label": "Wrist 1",       "sign": 1, "offset_deg": 0.0, "min_deg": -360, "max_deg": 360, "home_deg": 0},
+    {"id": "wrist_2_joint",       "fusion_match": "wrist_2",       "label": "Wrist 2",       "sign": 1, "offset_deg": 0.0, "min_deg": -360, "max_deg": 360, "home_deg": 0},
+    {"id": "wrist_3_joint",       "fusion_match": "wrist_3",       "label": "Wrist 3",       "sign": 1, "offset_deg": 0.0, "min_deg": -360, "max_deg": 360, "home_deg": 0}
+  ],
+  "ik": {"type": "ur_analytic", "variant": "ur5e"},
+  "poses": {
+    "home":    [0, 0, 0, 0, 0, 0],
+    "tucked":  [0, -90, 90, -90, -90, 0]
+  }
+}

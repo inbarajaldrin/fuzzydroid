@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Robot Jog</title>
+<style>
+  :root {
+    --bg: #1b1d1f; --panel: #26292c; --panel2: #2e3236; --line: #3a3f44;
+    --text: #e8eaec; --dim: #9aa1a8; --accent: #4da3ff; --ok: #43c56f; --warn: #e8b339; --err: #e5604c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 13px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+           border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); z-index: 2; }
+  header h1 { font-size: 14px; margin: 0; font-weight: 600; }
+  #doc { color: var(--dim); font-size: 11px; margin-left: auto; max-width: 46%;
+         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  button { background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+           border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 12px; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #08111c; font-weight: 600; }
+  button.big { padding: 10px 0; flex: 1; font-size: 13px; font-weight: 600; }
+  section { margin: 10px 10px 0; background: var(--panel); border: 1px solid var(--line);
+            border-radius: 10px; padding: 10px 12px 12px; }
+  section h2 { font-size: 12px; margin: 0 0 8px; color: var(--accent); text-transform: uppercase;
+               letter-spacing: .06em; }
+  .joint { display: grid; grid-template-columns: 86px 1fr 62px; gap: 8px; align-items: center;
+           margin: 6px 0; }
+  .joint label { color: var(--dim); font-size: 11px; overflow: hidden; text-overflow: ellipsis;
+                 white-space: nowrap; }
+  input[type=range] { width: 100%; accent-color: var(--accent); height: 22px; }
+  input[type=number] { width: 100%; background: var(--panel2); border: 1px solid var(--line);
+                       color: var(--text); border-radius: 5px; padding: 3px 5px; font-size: 12px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 2px; }
+  .card { background: var(--panel2); border: 1px solid var(--line); border-radius: 8px;
+          padding: 8px 10px; margin-top: 10px; }
+  .card h3 { margin: 0 0 6px; font-size: 11px; color: var(--dim); text-transform: uppercase;
+             letter-spacing: .05em; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .grid3 .f { display: flex; flex-direction: column; gap: 2px; }
+  .grid3 .f span { font-size: 10px; color: var(--dim); }
+  .row { display: flex; gap: 8px; margin-top: 8px; }
+  #fkOut { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--dim);
+           margin-top: 6px; white-space: pre-wrap; }
+  #status { position: sticky; bottom: 0; margin-top: 12px; padding: 7px 12px; font-size: 11px;
+            color: var(--dim); background: var(--bg); border-top: 1px solid var(--line);
+            display: flex; gap: 6px; align-items: center; }
+  #dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); flex: none; }
+  #dot.ok { background: var(--ok); } #dot.busy { background: var(--warn); } #dot.err { background: var(--err); }
+  .widthRow { display: grid; grid-template-columns: 1fr 62px 30px; gap: 8px; align-items: center; margin-top: 8px; }
+  .empty { color: var(--dim); padding: 24px 14px; text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Robot Jog</h1>
+  <button id="rescan" title="Rescan joints of the active document">&#x21bb; Rescan</button>
+  <div id="doc"></div>
+</header>
+<main id="main"><div class="empty">Scanning active document…</div></main>
+<div id="status"><div id="dot"></div><span id="statusText">connecting…</span></div>
+
+<script>
+'use strict';
+const $main = document.getElementById('main');
+const $doc = document.getElementById('doc');
+const $dot = document.getElementById('dot');
+const $statusText = document.getElementById('statusText');
+let model = null;
+
+function setStatus(kind, text) { $dot.className = kind; $statusText.textContent = text; }
+
+/* One request in flight; latest value per key wins while waiting. */
+const pending = new Map();
+let inflight = false;
+function queueSet(key, payload) {
+  pending.set(key, payload);
+  pump();
+}
+async function pump() {
+  if (inflight || pending.size === 0) return;
+  inflight = true;
+  const sets = [...pending.values()].filter(p => p._ep === undefined);
+  const special = [...pending.entries()].find(([, p]) => p._ep !== undefined);
+  try {
+    setStatus('busy', 'moving…');
+    let resp;
+    if (sets.length) {
+      for (const [k, p] of [...pending]) if (p._ep === undefined) pending.delete(k);
+      resp = await api('/api/set', { sets });
+    } else if (special) {
+      pending.delete(special[0]);
+      const p = special[1];
+      resp = await api(p._ep, p);
+    }
+    if (resp && resp.fk) renderFK(resp.fk);
+    if (resp && resp.errors && resp.errors.length) {
+      setStatus('err', resp.errors[0].error);
+    } else {
+      setStatus('ok', 'idle');
+    }
+  } catch (e) {
+    setStatus('err', String(e.message || e));
+  } finally {
+    inflight = false;
+    if (pending.size) pump();
+  }
+}
+
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {} :
+    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json();
+  if (j.status === 'error') throw new Error(j.message);
+  return j;
+}
+
+/* ── rendering ── */
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else n.setAttribute(k, v);
+  }
+  for (const kid of kids) n.append(kid);
+  return n;
+}
+
+function jointRow(label, min, max, value, step, oninput) {
+  const slider = el('input', { type: 'range', min, max, step, value });
+  const num = el('input', { type: 'number', min, max, step, value: Number(value).toFixed(1) });
+  slider.addEventListener('input', () => { num.value = Number(slider.value).toFixed(1); oninput(parseFloat(slider.value)); });
+  num.addEventListener('change', () => { slider.value = num.value; oninput(parseFloat(num.value)); });
+  const row = el('div', { class: 'joint' }, el('label', { title: label }, label), slider, num);
+  row._sync = v => { slider.value = v; num.value = Number(v).toFixed(1); };
+  return row;
+}
+
+const jointRows = {};   // key → row element (for syncing after IK/pose)
+const widthRows = {};   // gripper profile → {slider, num}
+
+function render() {
+  $main.replaceChildren();
+  $doc.textContent = model.doc || '(no active design)';
+  if (!model.sections.length) {
+    $main.append(el('div', { class: 'empty' },
+      'No revolute/slider joints found in the active document. Open a rigged design and hit Rescan.'));
+    return;
+  }
+  for (const s of model.sections) {
+    const sec = el('section', {}, el('h2', {}, s.title));
+    if (s.kind === 'arm') renderArm(sec, s);
+    else if (s.kind === 'gripper') renderGripper(sec, s);
+    else renderGeneric(sec, s);
+    $main.append(sec);
+  }
+  if (model.fk) renderFK(model.fk);
+}
+
+function renderArm(sec, s) {
+  for (const j of s.joints) {
+    const key = s.profile + ':' + j.id;
+    const row = jointRow(j.label, j.min_deg, j.max_deg, j.value_deg, 0.5,
+      v => queueSet(key, { profile: s.profile, id: j.id, value: v }));
+    jointRows[key] = { row, section: s.profile };
+    sec.append(row);
+  }
+  const chips = el('div', { class: 'chips' });
+  for (const name of Object.keys(s.poses || {})) {
+    chips.append(el('button', { onclick: () => queueSet('pose:' + s.profile, { _ep: '/api/pose', profile: s.profile, pose: name }) }, name));
+  }
+  chips.append(el('button', { onclick: rescan }, 'read'));
+  sec.append(chips);
+
+  if (s.ik) {
+    const card = el('card' && 'div', { class: 'card' }, el('h3', {}, 'IK target — flange in base (DH) frame'));
+    const fields = {};
+    const g1 = el('div', { class: 'grid3' });
+    for (const [k, unit] of [['x', 'mm'], ['y', 'mm'], ['z', 'mm']]) {
+      fields[k] = el('input', { type: 'number', step: '1' });
+      g1.append(el('div', { class: 'f' }, el('span', {}, `${k} (${unit})`), fields[k]));
+    }
+    const g2 = el('div', { class: 'grid3' });
+    for (const k of ['roll', 'pitch', 'yaw']) {
+      fields[k] = el('input', { type: 'number', step: '1' });
+      g2.append(el('div', { class: 'f' }, el('span', {}, `${k} (deg)`), fields[k]));
+    }
+    card.append(g1, el('div', { style: 'height:6px' }), g2);
+    const readBtn = el('button', { onclick: () => fillFromFK(s.profile, fields) }, 'Read current');
+    const goBtn = el('button', { class: 'primary', onclick: () => {
+      queueSet('ik:' + s.profile, { _ep: '/api/ik', profile: s.profile,
+        xyz_mm: ['x', 'y', 'z'].map(k => parseFloat(fields[k].value || 0)),
+        rpy_deg: ['roll', 'pitch', 'yaw'].map(k => parseFloat(fields[k].value || 0)) });
+    } }, 'Solve & Go');
+    card.append(el('div', { class: 'row' }, readBtn, goBtn));
+    card.append(el('div', { id: 'fkOut' }, ''));
+    card._fields = fields;
+    sec.append(card);
+    sec._ikCard = card;
+  }
+}
+
+let lastFK = {};
+function renderFK(fk) {
+  lastFK = { ...lastFK, ...fk };
+  for (const [prof, info] of Object.entries(fk)) {
+    if (!info) continue;
+    const out = document.getElementById('fkOut');
+    if (out) {
+      const p = info.xyz_mm.map(v => v.toFixed(1)).join(', ');
+      const r = info.rpy_deg.map(v => v.toFixed(1)).join(', ');
+      out.textContent = `now  xyz [${p}] mm\n     rpy [${r}] deg`;
+    }
+    for (let i = 0; i < info.q_deg.length; i++) {
+      const key = prof + ':' + (model.sections.find(s => s.profile === prof)?.joints[i]?.id);
+      if (jointRows[key] && !pending.has(key)) jointRows[key].row._sync(info.q_deg[i]);
+    }
+  }
+}
+function fillFromFK(profile, fields) {
+  const info = lastFK[profile];
+  if (!info) return;
+  ['x', 'y', 'z'].forEach((k, i) => fields[k].value = info.xyz_mm[i].toFixed(1));
+  ['roll', 'pitch', 'yaw'].forEach((k, i) => fields[k].value = info.rpy_deg[i].toFixed(1));
+}
+
+function renderGripper(sec, s) {
+  const d = s.drive;
+  const row = el('div', { class: 'row' },
+    el('button', { class: 'big', onclick: () => queueSet('grip:' + s.profile, { _ep: '/api/gripper', profile: s.profile, action: 'open' }) }, 'Open'),
+    el('button', { class: 'big', onclick: () => queueSet('grip:' + s.profile, { _ep: '/api/gripper', profile: s.profile, action: 'close' }) }, 'Close'));
+  sec.append(row);
+  if (d.width_range_mm) {
+    const [lo, hi] = [Math.min(...d.width_range_mm), Math.max(...d.width_range_mm)];
+    const slider = el('input', { type: 'range', min: lo.toFixed(1), max: hi.toFixed(1), step: 0.5, value: d.width_mm ?? lo });
+    const num = el('input', { type: 'number', min: lo.toFixed(1), max: hi.toFixed(1), step: 0.5, value: (d.width_mm ?? lo).toFixed(1) });
+    const send = v => queueSet('grip:' + s.profile, { _ep: '/api/gripper', profile: s.profile, action: 'width', width_mm: v });
+    slider.addEventListener('input', () => { num.value = Number(slider.value).toFixed(1); send(parseFloat(slider.value)); });
+    num.addEventListener('change', () => { slider.value = num.value; send(parseFloat(num.value)); });
+    const offsetOut = el('div', { style: 'color:var(--dim);font-size:11px;margin-top:4px' }, '');
+    widthRows[s.profile] = { slider, num, offsetOut };
+    sec.append(el('div', { class: 'widthRow' }, slider, num,
+                  el('span', { style: 'color:var(--dim);font-size:11px' }, 'mm raw')),
+               offsetOut);
+    setOffsetText(s.profile, d.width_offset_mm);
+  }
+}
+function setOffsetText(profile, mm) {
+  const w = widthRows[profile];
+  if (w && mm != null) w.offsetOut.textContent = `w/ fingertip offset (pad gap): ${mm.toFixed(1)} mm`;
+}
+function syncWidth(profile, v) {
+  const w = widthRows[profile];
+  if (!w || v == null) return;
+  const raw = typeof v === 'object' ? v.raw : v;
+  if (raw != null) { w.slider.value = raw; w.num.value = raw.toFixed(1); }
+  if (typeof v === 'object') setOffsetText(profile, v.offset);
+}
+
+function renderGeneric(sec, s) {
+  for (const j of s.joints) {
+    const row = jointRow(`${j.label} (${j.unit})`, j.min, j.max, j.value, j.unit === 'deg' ? 0.5 : 0.1,
+      v => queueSet('tok:' + j.token, { token: j.token, kind: j.kind, value: v }));
+    jointRows['tok:' + j.token] = { row };
+    sec.append(row);
+  }
+}
+
+async function rescan() {
+  try {
+    setStatus('busy', 'scanning joints…');
+    model = await api('/api/state');
+    render();
+    setStatus('ok', 'idle');
+  } catch (e) {
+    setStatus('err', String(e.message || e));
+    $main.replaceChildren(el('div', { class: 'empty' },
+      'Scan failed: ' + (e.message || e) + ' — is a design open and Fusion responsive?'));
+  }
+}
+document.getElementById('rescan').addEventListener('click', rescan);
+
+/* Live sync: the server broadcasts a snapshot after every mutation (from this
+   page, another browser, an agent via the API) and when it detects joints
+   moved inside Fusion itself. Skip keys the user is actively dragging. */
+function applySync(m) {
+  if (!model) return;
+  for (const [key, v] of Object.entries(m.values || {})) {
+    if (pending.has(key)) continue;
+    const r = jointRows[key];
+    if (r) r.row._sync(v);
+  }
+  for (const [prof, mm] of Object.entries(m.width || {})) {
+    if (!pending.has('grip:' + prof)) syncWidth(prof, mm);
+  }
+  if (m.fk) renderFK(m.fk);
+}
+const es = new EventSource('/api/events');
+es.onmessage = e => { try { applySync(JSON.parse(e.data)); } catch (_) {} };
+
+rescan();
+</script>
+</body>
+</html>

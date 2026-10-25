@@ -1,0 +1,23 @@
+{
+  "skill_name": "rig-joints",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I imported a STEP of a Kinova Gen3 lite into Fusion (the fzd-fusion bridge is running). It has 7 components but no joints. I have its URDF from the kortex_description package. Set up the frames to match the URDF and add working revolute joints so I can pose it in Fusion.",
+      "expected_output": "Agent follows the Law order: parametric first, measures axes from cylinder faces, solves registration outside Fusion, uses gated regular joints with circle pairs, validates numerically. No as-built revolutes, no bbox-based measurements.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "My Fusion assembly explodes when I drive the shoulder joint - parts fly apart. I created the joints with a script using asBuiltJoints. Can you fix it?",
+      "expected_output": "Agent recognizes the as-built pivot permutation bug, recreates as regular joints from coincident circle pairs with gated compensation, verifies with live edge geometry.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I rigged a scissor-lift mechanism in Fusion with revolute joints at every pin, and now nothing moves when I set rotationValue even though the value sticks. No URDF exists for this.",
+      "expected_output": "Agent identifies closed-loop over-constraint, removes loop-closing joints, adds motion links with empirical sign search, validates loop closure geometrically.",
+      "files": []
+    }
+  ]
+}

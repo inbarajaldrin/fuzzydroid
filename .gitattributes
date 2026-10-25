@@ -1,0 +1,5 @@
+# PDFs must remain byte-for-byte intact; their internal whitespace is meaningful.
+*.pdf binary
+
+# Preserve vendored upstream source without applying project whitespace rules.
+plugins/fusion/viewer/urdf/viewer/assets/vendor/*.js -whitespace

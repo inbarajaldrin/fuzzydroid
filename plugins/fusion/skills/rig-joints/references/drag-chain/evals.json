@@ -1,0 +1,24 @@
+{
+  "skill_name": "rig-drag-chain",
+  "note": "These evals require a live Fusion 360 instance with the fuzzydroid bridge and a chain-bearing assembly open — run them during devdroid incubation as integration tests, not as parallel subagent evals.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My Fusion design has an igus energy chain (18 identical links + 2 end brackets) between a moving gantry cart and the frame. The cart slider is already rigged. Rig the chain so every link is jointed at its real pins and the whole thing follows the cart, then prove it by driving the cart 200mm and showing me nothing detached.",
+      "expected_output": "Adjacency discovered from pin circles; 19 gated revolutes created (ladder used where needed); chain anchored to cart via welds; drive test shows all links translate with cart, unjointed control parts stay; pose table recorded before any joint work.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "The cable carrier in my assembly got exploded — half the links are floating 20cm away after I tried adding joints by hand. The joints exist but the pose is garbage. Fix it without deleting my joints.",
+      "expected_output": "Drive-heal recovery: landmarks vs pose table (or reconstructed targets), proximal-to-distal target-converging drives with empirical signs, full-part audit before saving; no joint deletion.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Make the drag chain in my design animate realistically as the carriage moves — the bend should roll along and the fixed end shouldn't slide forward. Give me a GIF of the full travel.",
+      "expected_output": "Calibration (pins, r0, empirical signs, path params), theta_i(q) pose engine with drape-first pull-only tail physics, bend migrates at q/2, fixed-camera sweep frames assembled with ffmpeg, exact park restore, explicitly does NOT close the loop with a tail joint.",
+      "files": []
+    }
+  ]
+}

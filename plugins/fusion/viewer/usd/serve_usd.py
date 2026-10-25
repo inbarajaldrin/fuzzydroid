@@ -434,7 +434,7 @@ VIEWER_TEMPLATE = string.Template("""\
         fileSelect.addEventListener('change', (e) => {
             currentFilename = e.target.value;
             // Auto-fill export name from selected file (without extension)
-            document.getElementById('export-name').value = currentFilename.replace(/\.[^.]+$$/, '');
+            document.getElementById('export-name').value = currentFilename.replace(/\\.[^.]+$$/, '');
             document.getElementById('export-status').textContent = '';
             loadMesh(currentFilename);
         });

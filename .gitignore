@@ -29,7 +29,7 @@ Thumbs.db
 *.swo
 
 # Local-only state (scratchpad — machine-specific)
-.local/
+.scratchpad/
 
 # Build artifacts
 build/
@@ -41,3 +41,7 @@ outputs/
 *.step
 *.stl
 *.f3d
+
+# Local backups and personal tutorial work
+*.pre-*
+plugins/*/skills/*/tutorials/

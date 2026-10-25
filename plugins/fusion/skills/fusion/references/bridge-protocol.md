@@ -1,6 +1,10 @@
-# Fusion Bridge — TCP Wire Protocol
+# Fusion Bridge — Wire Protocol
 
-Reference for the TCP protocol between the CLI and the `fusion_bridge` add-in.
+Reference for the protocol between the CLI and the `fusion_bridge` add-in.
+Transport: Unix domain socket on macOS/Linux (~/.config/fuzzydroid/fusion_bridge.sock),
+TCP 127.0.0.1:8765-8775 on Windows. The live endpoint is
+advertised in ~/.config/fuzzydroid/fusion_bridge.json; clients verify it with a
+signed ping before trusting it.
 Agents normally never see this layer — they call the CLI, which serialises to JSON
 and sends here. Documented for: low-level debugging, writing custom clients, and
 understanding why certain failures look the way they do.
@@ -11,7 +15,7 @@ understanding why certain failures look the way they do.
 CLI (Python)
   │
   ▼
-TCP socket :8765  (newline-delimited JSON, one command per connection)
+UDS or TCP socket  (newline-delimited JSON, one command per connection)
   │
   ▼
 fusion_bridge add-in  (runs inside Fusion 360 on the main UI thread via CustomEvent)
@@ -21,14 +25,14 @@ Fusion 360 API  (adsk.core, adsk.fusion, adsk.cam)
 ```
 
 The CLI never imports the Fusion API directly. Every operation is one JSON line
-sent over TCP. The bridge marshals all API calls onto Fusion's main UI thread
+sent over the socket. The bridge marshals all API calls onto Fusion's main UI thread
 (threading directly into the Fusion API crashes the process).
 
 ## Connection lifecycle
 
-One command per TCP connection:
+One command per connection:
 
-1. CLI opens a socket to `127.0.0.1:8765`.
+1. CLI resolves the endpoint (env override -> discovery file -> default socket -> TCP scan) and connects.
 2. CLI sends one JSON object on one line, terminated by `\n`.
 3. Bridge enqueues the command via `app.fireCustomEvent`.
 4. Bridge handler runs on the main UI thread, executes the command, writes the
@@ -129,8 +133,9 @@ All errors arrive as `{"status": "error", "message": "..."}`. Common shapes:
 
 | Variable | Default | Used by |
 |---|---|---|
+| `FUSION_BRIDGE_SOCKET` | auto-discover | CLI |
 | `FUSION_BRIDGE_HOST` | `127.0.0.1` | CLI |
-| `FUSION_BRIDGE_PORT` | `8765` | CLI |
+| `FUSION_BRIDGE_PORT` | auto-discover | CLI |
 | `FUSION_BRIDGE_TIMEOUT` | `120` (seconds) | CLI |
 | `CLAUDE_PLUGIN_ROOT` | (unset) | CLI's URDF export to locate `scripts/export_urdf.py` |
 

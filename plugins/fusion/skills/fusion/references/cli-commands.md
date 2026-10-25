@@ -1,28 +1,30 @@
-# cli-anything-fusion — Full CLI Surface
+# fzd-fusion — Full CLI Surface
 
-Every subcommand the agent can invoke via `Bash`. The CLI lives in the shared
-venv (`~/.local/share/fuzzydroid/venv/bin/cli-anything-fusion`) and talks to
-the `fusion_bridge` add-in on `localhost:8765`.
+Every subcommand the agent can invoke via `Bash`. The CLI lives in the plugin
+venv (`~/.local/share/fuzzydroid/fusion/venv/bin/fzd-fusion`) and talks to
+the `fusion_bridge` add-in over an auto-discovered endpoint (Unix socket on
+macOS, TCP 127.0.0.1:8765-8775 on Windows).
 
 ## Global flags
 
 | Flag | Effect |
 |---|---|
 | `--json` | Machine-readable JSON output. **Always pass this when an agent is calling the CLI.** |
-| `--host HOST` | Override bridge TCP host (default `127.0.0.1`). |
-| `--port N` | Override bridge TCP port (default `8765`). |
+| `--host HOST` | Override bridge TCP host (default: auto-discover). |
+| `--port N` | Override bridge TCP port (default: auto-discover). |
+| `--socket PATH` | Override bridge Unix-socket path (default: auto-discover). |
 | `--version` | Print CLI version and exit. |
 
-Set via env instead: `FUSION_BRIDGE_HOST`, `FUSION_BRIDGE_PORT`,
+Set via env instead: `FUSION_BRIDGE_SOCKET`, `FUSION_BRIDGE_HOST`, `FUSION_BRIDGE_PORT`,
 `FUSION_BRIDGE_TIMEOUT` (default 120 s).
 
 ## Connectivity
 
 ```bash
-cli-anything-fusion --json ping
+fzd-fusion --json ping
 ```
 
-Returns `{"status": "ok", "message": "pong", "pid": <fusion_pid>}`. If the
+Returns `{"status": "ok", "message": "pong", "bridge": "fusion_bridge", "pid": <fusion_pid>}`. If the
 bridge is unreachable, you get a structured error pointing at `/fusion:doctor`.
 
 **Always ping first** when a session opens — it's the cheapest "is Fusion alive"
@@ -32,24 +34,24 @@ check.
 
 ```bash
 # List all projects in the active Fusion data hub
-cli-anything-fusion --json project list
+fzd-fusion --json project list
 
 # Build the local file cache (slow — minutes; do once per session)
-cli-anything-fusion --json project cache
+fzd-fusion --json project cache
 
 # Search the cached index (instant)
-cli-anything-fusion --json project find --term "scara"
+fzd-fusion --json project find --term "scara"
 
 # Live search the Fusion cloud (slow — 30–60 s)
-cli-anything-fusion --json project search --term "scara"
+fzd-fusion --json project search --term "scara"
 
 # Open a file. Required: --project, --file. Optional: --folder (repeat for nested)
-cli-anything-fusion --json project open \
+fzd-fusion --json project open \
   --project "SO-ARM101" --file "arm_base"
 
-cli-anything-fusion --json project open \
-  --project "Default Project" --file "base3" \
-  --folder "UR5" --folder "FMB"
+fzd-fusion --json project open \
+  --project "Default Project" --file "widget" \
+  --folder "MyProject" --folder "parts"
 ```
 
 When the user's request is ambiguous ("open the scara"), run `project find` first,
@@ -58,11 +60,11 @@ present candidates, and confirm before opening.
 ## Design inspection
 
 ```bash
-cli-anything-fusion --json design info         # document name, body/component counts, units
-cli-anything-fusion --json design bodies       # list all bodies, with names + body counts
-cli-anything-fusion --json design components   # list component occurrences
-cli-anything-fusion --json design bbox         # bounding box (min/max XYZ in cm)
-cli-anything-fusion --json design timeline     # feature history
+fzd-fusion --json design info         # document name, body/component counts, units
+fzd-fusion --json design bodies       # list all bodies, with names + body counts
+fzd-fusion --json design components   # list component occurrences
+fzd-fusion --json design bbox         # bounding box (min/max XYZ in cm)
+fzd-fusion --json design timeline     # feature history
 ```
 
 All return JSON; `bbox` reports cm (Fusion's internal unit) — multiply by 0.01 for
@@ -71,11 +73,11 @@ metres.
 ## Export
 
 ```bash
-cli-anything-fusion --json export step --path ./outputs/out.step
-cli-anything-fusion --json export stl  --path ./outputs/out.stl
-cli-anything-fusion --json export f3d  --path ./outputs/out.f3d
+fzd-fusion --json export step --path ./outputs/out.step
+fzd-fusion --json export stl  --path ./outputs/out.stl
+fzd-fusion --json export f3d  --path ./outputs/out.f3d
 
-cli-anything-fusion --json export urdf \
+fzd-fusion --json export urdf \
   --path ./outputs/scara_urdf \
   --pkg-name scara_description \
   --robot-name scara_arm
@@ -85,7 +87,7 @@ cli-anything-fusion --json export urdf \
 - `urdf` runs `plugins/fusion/scripts/export_urdf.py` inside Fusion via the bridge's
   `exec_python`. Requires the design to follow the conventions in
   `references/cad-to-urdf.md`.
-- USD is a separate post-process: `cli-anything-fusion export stl` → run
+- USD is a separate post-process: `fzd-fusion export stl` → run
   `plugins/fusion/scripts/export_usd.py <stl> <usd>` standalone.
 
 If `--path` is omitted, output goes to `./outputs/<active_doc_name>.<ext>` — never
@@ -95,17 +97,17 @@ If `--path` is omitted, output goes to `./outputs/<active_doc_name>.<ext>` — n
 
 ```bash
 # One-liner
-cli-anything-fusion --json exec --code "import adsk.core; print(adsk.core.Application.get().activeDocument.name)"
+fzd-fusion --json exec --code "import adsk.core; print(adsk.core.Application.get().activeDocument.name)"
 
 # Multi-line via stdin
 printf 'import adsk.core
 app = adsk.core.Application.get()
 print(app.activeDocument.name)' \
-  | cli-anything-fusion --json exec -
+  | fzd-fusion --json exec -
 
 # Persistent session — variables survive between calls
-cli-anything-fusion --json exec --code "x = 42" --session-id work --persistent
-cli-anything-fusion --json exec --code "print(x)" --session-id work --persistent
+fzd-fusion --json exec --code "x = 42" --session-id work --persistent
+fzd-fusion --json exec --code "print(x)" --session-id work --persistent
 ```
 
 Hard rules for code sent via `exec`:
@@ -123,7 +125,7 @@ Hard rules for code sent via `exec`:
 
 ```bash
 printf "exec(open('plugins/fusion/scripts/export_step.py').read())" \
-  | cli-anything-fusion --json exec -
+  | fzd-fusion --json exec -
 ```
 
 Bundled scripts (in `plugins/fusion/scripts/`):
@@ -147,29 +149,29 @@ the bridge). `export_usd.py` is standalone.
 For Fusion API calls the CLI doesn't wrap explicitly:
 
 ```bash
-cli-anything-fusion --json api call --path "design.rootComponent.bRepBodies.count"
+fzd-fusion --json api call --path "design.rootComponent.bRepBodies.count"
 
 # Store a reference for chained calls
-cli-anything-fusion --json api call \
+fzd-fusion --json api call \
   --path "rootComponent.sketches.add" \
   --args '["rootComponent.xYConstructionPlane"]' \
   --store-as sketch1
 
 # Search the Fusion API docs
-cli-anything-fusion --json api docs --search "ExtrudeFeatures"
+fzd-fusion --json api docs --search "ExtrudeFeatures"
 
 # Get the online docs URL
-cli-anything-fusion --json api online --class "Sketch" --member "profiles"
+fzd-fusion --json api online --class "Sketch" --member "profiles"
 
 # Clear stored references
-cli-anything-fusion --json api clear
+fzd-fusion --json api clear
 ```
 
 ## Interactive REPL (non-agent use)
 
 ```bash
-cli-anything-fusion           # default behaviour with no subcommand
-cli-anything-fusion repl      # explicit REPL
+fzd-fusion           # default behaviour with no subcommand
+fzd-fusion repl      # explicit REPL
 ```
 
 Agents should not use the REPL — every call should be a discrete one-shot for
@@ -198,10 +200,10 @@ if [ -z "$VENV_PYTHON" ]; then
     exit 1
 fi
 
-"$VENV_PYTHON" -m fuzzydroid.fusion.cli --json <subcommand>
+"$VENV_PYTHON" -m fuzzydroid_fusion.cli --json <subcommand>
 ```
 
 For ad-hoc invocations from the agent's Bash tool, the binary is at
-`~/.local/share/fuzzydroid/venv/bin/cli-anything-fusion` (macOS) or
-`%LOCALAPPDATA%\fuzzydroid\venv\Scripts\cli-anything-fusion.exe` (Windows).
+`~/.local/share/fuzzydroid/fusion/venv/bin/fzd-fusion` (macOS) or
+`%LOCALAPPDATA%\fuzzydroid\fusion\venv\Scripts\fzd-fusion.exe` (Windows).
 The agent can use that path directly without the TOML lookup.

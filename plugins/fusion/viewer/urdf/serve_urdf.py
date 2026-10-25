@@ -13,12 +13,17 @@ Meshes are resolved via relative paths in the URDF (../meshes/*.stl).
 """
 
 import argparse
+import atexit
 import http.server
+import json
 import os
 import re
+import shutil
 import signal
 import sys
+import tempfile
 import webbrowser
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 VIEWER_DIR = Path(__file__).parent / "viewer"
@@ -30,6 +35,17 @@ INDEX_TEMPLATE = """\
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <meta charset="utf-8"/>
         <title>URDF Viewer — {title}</title>
+        <!-- Import map: lets the prune overlay import the locally-vendored three +
+             three-mesh-bvh by bare name (offline-safe; no CDN). Must precede any
+             module script. The viewer bundle uses no bare imports, so it is unaffected. -->
+        <script type="importmap">
+        {{
+            "imports": {{
+                "three": "./assets/vendor/three.module.js",
+                "three-mesh-bvh": "./assets/vendor/three-mesh-bvh.module.js"
+            }}
+        }}
+        </script>
         <script src="https://unpkg.com/@webcomponents/webcomponentsjs@2.4.3/webcomponents-bundle.js"></script>
         <link href="https://fonts.googleapis.com/css?family=Roboto:100,300" rel="stylesheet"/>
         <script type="module" crossorigin src="./assets/{js_main}"></script>
@@ -37,6 +53,8 @@ INDEX_TEMPLATE = """\
         <link rel="modulepreload" crossorigin href="./assets/{js_drag}">
         <link rel="modulepreload" crossorigin href="./assets/{js_orbit}">
         <link rel="stylesheet" crossorigin href="./assets/{css_main}">
+        <!-- Prune / collision / export overlay (drives the <urdf-viewer> public API). -->
+        <script type="module" src="./assets/prune_overlay.js?v={overlay_ver}"></script>
     </head>
     <body tabindex="0">
         <div id="menu">
@@ -171,12 +189,120 @@ def generate_index(viewer_dir: Path, urdf_dir: Path, urdfs: list[Path]) -> str:
         package_attr = ""
 
     title = urdf_dir.name.replace("_", " ").title()
+    # cache-bust the un-bundled overlay by its mtime so browsers refetch on edit
+    try:
+        overlay_ver = str(int((viewer_dir / "assets" / "prune_overlay.js").stat().st_mtime))
+    except OSError:
+        overlay_ver = "0"
     return INDEX_TEMPLATE.format(
         title=title,
         urdf_items="\n".join(items),
         package_attr=package_attr,
+        overlay_ver=overlay_ver,
         **assets,
     )
+
+
+def _mesh_rel(filename: str, pkg_dir: Path, urdf_path: Path) -> Path:
+    """Resolve package URIs from the package root and other paths from the URDF."""
+    match = re.match(r"package://[^/]+/(.*)", filename)
+    source = pkg_dir / match.group(1) if match else urdf_path.parent / filename
+    source = source.resolve()
+    try:
+        relative = source.relative_to(pkg_dir.resolve())
+    except ValueError as exc:
+        raise ValueError(f"Mesh is outside the package: {filename}") from exc
+    if not source.is_file():
+        raise FileNotFoundError(f"Mesh not found: {filename}")
+    return relative
+
+
+def export_pruned(pkg_dir: Path, urdf_path: Path, prune: list) -> dict:
+    """Write a pruned copy of the package to a sibling '<name>_pruned' dir.
+
+    Kept <visual> elements retain their exact mesh refs + origins; the <visual>
+    elements named in `prune` (by owning link + document-order index) are removed.
+    Mesh files still referenced by any kept <visual>/<collision> are copied across.
+    The source package is never modified or overwritten.
+    """
+    tree = ET.parse(urdf_path)
+    root = tree.getroot()
+
+    prune_map = {}
+    for p in prune:
+        prune_map.setdefault(p["link"], set()).add(int(p["visualIndex"]))
+
+    pruned_count = 0
+    for link_el in root.findall("link"):
+        name = link_el.get("name")
+        if name not in prune_map:
+            continue
+        visuals = link_el.findall("visual")
+        for idx in sorted(prune_map[name], reverse=True):
+            if 0 <= idx < len(visuals):
+                link_el.remove(visuals[idx])
+                pruned_count += 1
+
+    # Mesh files still referenced after pruning (visual + collision).
+    mesh_refs = {m.get("filename") for m in root.iter("mesh") if m.get("filename")}
+
+    # Validate every source before creating an output. A unique directory preserves
+    # prior exports and any unrelated sibling named '<package>_pruned'.
+    mesh_paths = {_mesh_rel(filename, pkg_dir, urdf_path) for filename in mesh_refs}
+    out = Path(tempfile.mkdtemp(prefix=f"{pkg_dir.name}_pruned_", dir=pkg_dir.parent))
+    try:
+        out_urdf = out / urdf_path.relative_to(pkg_dir)
+        out_urdf.parent.mkdir(parents=True, exist_ok=True)
+        tree.write(out_urdf, xml_declaration=True, encoding="utf-8")
+
+        for rel in mesh_paths:
+            dst = out / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(pkg_dir / rel, dst)
+
+        for extra in ("package.xml", "CMakeLists.txt"):
+            source = pkg_dir / extra
+            if source.exists():
+                shutil.copy2(source, out / extra)
+    except Exception:
+        shutil.rmtree(out)
+        raise
+
+    return {
+        "ok": True,
+        "output_dir": str(out),
+        "pruned_count": pruned_count,
+        "kept_visuals": len(list(root.iter("visual"))),
+        "meshes_copied": len(mesh_paths),
+    }
+
+
+def make_handler(pkg_dir: Path, urdf_path: Path):
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def do_POST(self):
+            origin = self.headers.get("Origin")
+            if origin is not None and origin != f"http://{self.headers.get('Host')}":
+                self.send_error(403, "Cross-origin export requests are not allowed")
+                return
+            if self.path.rstrip("/") != "/export":
+                self.send_error(404)
+                return
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                if not 0 <= length <= 1024 * 1024:
+                    raise ValueError("Export request exceeds 1 MiB")
+                payload = json.loads(self.rfile.read(length) or b"{}")
+                result = export_pruned(pkg_dir, urdf_path, payload.get("prune", []))
+            except Exception as exc:  # surface the error to the browser, don't 500 silently
+                result = {"ok": False, "error": str(exc)}
+            body = json.dumps(result).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+    return Handler
 
 
 def main():
@@ -205,19 +331,36 @@ def main():
     for u in urdfs:
         print(f"  - {u.name}")
 
-    # Create/update symlink: viewer/robot → urdf_dir
-    link_path = VIEWER_DIR / "robot"
-    if link_path.is_symlink() or link_path.exists():
-        link_path.unlink() if link_path.is_symlink() else None
-    link_path.symlink_to(urdf_dir)
-
-    # Generate index.html
+    # Build an ephemeral serve-root OUTSIDE the source tree. The plugin's
+    # viewer/ dir is read-only: it ships only the static assets/ bundle. Runtime
+    # artifacts (the generated index.html and the robot symlink to the user's
+    # URDF dir) are assembled in a temp dir and served from there, so running the
+    # viewer can never write into — or dirty — the plugin source.
+    #
+    # index.html references ./assets/ and ./robot/ relatively, so we symlink the
+    # real assets bundle and the user's URDF dir into the temp root beside it.
+    runtime_dir = Path(tempfile.mkdtemp(prefix="urdf-viewer-"))
+    (runtime_dir / "assets").symlink_to(VIEWER_DIR / "assets")
+    (runtime_dir / "robot").symlink_to(urdf_dir)
     index_html = generate_index(VIEWER_DIR, urdf_dir, urdfs)
-    (VIEWER_DIR / "index.html").write_text(index_html)
+    (runtime_dir / "index.html").write_text(index_html)
 
-    # Serve
-    os.chdir(VIEWER_DIR)
-    handler = http.server.SimpleHTTPRequestHandler
+    # Serve from the temp root
+    os.chdir(runtime_dir)
+
+    def cleanup(*_):
+        """Delete the ephemeral serve-root. Idempotent (atexit + finally)."""
+        shutil.rmtree(runtime_dir, ignore_errors=True)
+
+    # Clean up however the process ends: normal exit, Ctrl+C (SIGINT), or a
+    # kill/terminate (SIGTERM — e.g. an agent stopping a background server).
+    # SIGKILL can't be caught, but since the serve-root lives in the OS temp dir
+    # (never the repo), even a leaked dir cannot dirty the plugin source.
+    atexit.register(cleanup)
+
+    # Serve from the temp root, but POST /export writes a pruned copy of the real
+    # package (urdf_dir) to a sibling dir — the browser posts the prune list.
+    handler = make_handler(urdf_dir, urdfs[0])
     server = http.server.HTTPServer(("127.0.0.1", args.port), handler)
 
     url = f"http://localhost:{args.port}/"
@@ -227,20 +370,23 @@ def main():
     if not args.no_open:
         webbrowser.open(url)
 
-    signal.signal(signal.SIGINT, lambda *_: (server.shutdown(), sys.exit(0)))
+    # Raise SystemExit from the handler rather than calling server.shutdown():
+    # shutdown() blocks until serve_forever() returns, but the handler runs on
+    # the same thread that's inside serve_forever(), so calling it here would
+    # deadlock. sys.exit() unwinds serve_forever() cleanly, then finally/atexit
+    # run cleanup().
+    def _stop(*_):
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, _stop)
+    signal.signal(signal.SIGTERM, _stop)
 
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
-        # Clean up symlink
-        if link_path.is_symlink():
-            link_path.unlink()
-        # Clean up generated index.html
-        generated = VIEWER_DIR / "index.html"
-        if generated.exists():
-            generated.unlink()
+        cleanup()
         print("Stopped.")
 
 
