@@ -1,0 +1,24 @@
+{
+  "skill_name": "urdf-to-usd",
+  "note": "Integration evals — require a machine with Isaac Sim 5.x + a URDF package. Run during devdroid incubation.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a URDF package for my gantry robot at ~/ws/src/gantry_description (urdf/ + meshes/ with package:// paths). Convert it to USD for Isaac Sim on my GPU box and prove the articulation imported correctly.",
+      "expected_output": "Headless conversion with package:// pre-resolution from a clean cwd; verify_usd-style audit reporting joint counts, rigid bodies, articulation root, and the default-prim status.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "The robot USD loads into my Isaac scene but it's just an empty transform — no geometry, and SingleArticulation crashes with something about is_homogeneous. Fix it.",
+      "expected_output": "Diagnoses the hollow reference (no default prim) and/or pre-play articulation init; fixes via explicit AddReference(path, src_prim) and initialize(world.physics_sim_view) after play.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Wire it up so my existing ROS 2 joint_states topic drives the robot in Isaac Sim, and give me a native command to move a single joint too.",
+      "expected_output": "OmniGraph ROS2SubscribeJointState -> IsaacArticulationController with verified node names; a registered bridge tool using apply_action PD targets (never set_joint_positions).",
+      "files": []
+    }
+  ]
+}

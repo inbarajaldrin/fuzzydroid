@@ -1,0 +1,25 @@
+{
+  "name": "isaaclab",
+  "description": "Isaac Lab setup, health, and project scaffolding - detects existing installs (pip venv or source, never assuming a venv name), scaffolds extension projects from the pinned template with omni.kit.mcp bridge launch support, and enforces the per-profile launch-guard rule",
+  "author": {
+    "name": "Aldrin Inbaraj"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+  "repository": "https://github.com/inbarajaldrin/fuzzydroid",
+  "keywords": [
+    "isaac-lab",
+    "isaac-sim",
+    "nvidia",
+    "reinforcement-learning",
+    "robotics",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Isaac Lab",
+    "shortDescription": "Isaac Lab setup, health, and project scaffolding",
+    "developerName": "Aldrin Inbaraj",
+    "category": "Developer Tools"
+  }
+}

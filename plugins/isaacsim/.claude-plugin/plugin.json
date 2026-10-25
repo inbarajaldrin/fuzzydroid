@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "isaacsim",
+  "description": "NVIDIA Isaac Sim setup and health for robotics workstations - detects existing installs (pip/binary/source), registers the omni.kit.mcp bridge, persistently enables the ROS 2 bridge, and installs the native Isaac Viewer streaming app on macOS",
+  "author": {
+    "name": "Aldrin Inbaraj"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+  "repository": "https://github.com/inbarajaldrin/fuzzydroid",
+  "keywords": [
+    "isaac-sim",
+    "nvidia",
+    "omniverse",
+    "mcp",
+    "ros2",
+    "webrtc",
+    "robotics"
+  ]
+}
