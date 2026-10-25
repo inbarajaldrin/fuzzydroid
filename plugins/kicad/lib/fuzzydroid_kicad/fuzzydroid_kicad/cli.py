@@ -121,5 +121,29 @@ def mcp(ctx):
     run(ctx.obj["service"])
 
 
+@main.command()
+@click.option("--board", required=True, type=click.Path(path_type=Path, exists=True))
+@click.option("--schematic", type=click.Path(path_type=Path, exists=True))
+@click.option("--output", required=True, type=click.Path(path_type=Path))
+@click.option(
+    "--fusion", is_flag=True, help="Import and validate the STEP assembly in a new Fusion document."
+)
+@click.pass_context
+def handoff(ctx, board, schematic, output, fusion):
+    """Gate fabrication exports on ERC/DRC, package Gerbers/drills, and optionally hand off to Fusion."""
+    from .handoff import run
+
+    emit(
+        ctx,
+        lambda: run(
+            str(board),
+            str(output),
+            str(schematic) if schematic else None,
+            fusion,
+            ctx.obj["service"],
+        ),
+    )
+
+
 if __name__ == "__main__":
     main()

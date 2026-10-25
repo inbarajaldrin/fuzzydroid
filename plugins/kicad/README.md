@@ -61,6 +61,21 @@ The bundled `.mcp.json` uses the same installed runtime. MCP maps dotted names t
 double underscores: `native.inspect` becomes `native__inspect`. Reload the agent
 after installation and refresh its tool list after dynamic registrations.
 
+## Fabrication and Fusion handoff
+
+For a saved two-layer board and schematic, run:
+
+```text
+fzd-kicad --json handoff --board /absolute/board.kicad_pcb --output /new/handoff-directory --fusion
+```
+
+The command saves the PCB, runs ERC and DRC with schematic parity, exports Gerbers,
+drills, a full-scale copper PDF and assembled STEP, then imports the model into
+Fusion and checks its dimensions and component geometry. A receipt links source
+and artifact hashes. The fabrication ZIP is created after all requested checks
+pass. See the [handoff reference](skills/kicad/references/handoff.md) for scope,
+tolerance, outputs and the optional Fusion setup.
+
 ## Coverage and boundaries
 
 | Provider | Included capabilities |

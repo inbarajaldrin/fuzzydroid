@@ -75,6 +75,10 @@ state: read back windows or capture the actual render.
 
 ## Extend and troubleshoot
 
+For PCB fabrication exports and a mechanical import into Fusion, use the bounded
+`handoff` CLI workflow described in [references/handoff.md](references/handoff.md).
+It gates output on ERC/DRC/parity and writes a hash-linked validation receipt.
+
 The native panel's buttons and native MCP/CLI calls use the same registry.
 Project tools register through the public contract described in
 [references/architecture.md](references/architecture.md). New capabilities should

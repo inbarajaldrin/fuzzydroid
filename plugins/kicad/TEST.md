@@ -37,6 +37,19 @@ These are actual application tests, not mock evidence. The test intentionally
 does not save probe mutations. Save the restored board and run final project DRC
 after qualification if the app's modified flag changed.
 
+## Live fabrication and Fusion handoff
+
+Run the README handoff command with both applications connected and a fresh
+output directory. The qualified LED demo passes ERC, DRC and schematic parity,
+exports seven Gerber layers and six plated holes, and imports all three part
+models into Fusion. The imported outline measures 35 × 25 mm; finished PCB stack
+geometry measures 1.61 mm versus nominal 1.6 mm, within the recorded 0.05 mm CAD
+exchange tolerance. The core alone measures 1.51 mm, so the STEP preset includes
+copper, pads and solder mask. Local STEP, F3D, application previews and the
+hash-linked receipt are retained. Unit tests check that failed ERC/DRC blocks
+fabrication, existing exports are preserved, and multilayer boards cannot use
+the two-layer preset.
+
 ## Release gates
 
 - Live macOS KiCad 10.0.7 qualification and package installation.
