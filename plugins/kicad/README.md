@@ -1,0 +1,127 @@
+# KiCad
+
+Control a running KiCad PCB Editor from an agent, a JSON CLI, or a native tool
+panel. Use official IPC for ordinary edits with undo/rollback, and the embedded
+main-thread bridge for library loading and native application commands. Both
+backends operate on the board open in the user's editor.
+
+## Install
+
+```text
+/plugin install kicad@fuzzydroid
+/kicad:setup
+```
+
+Restart PCB Editor after setup and enable the official API in **Preferences >
+Plugins** when prompted. The agent runs the health checks and continues the task.
+
+In Codex CLI:
+
+```bash
+codex plugin marketplace add https://github.com/inbarajaldrin/fuzzydroid
+codex plugin add kicad@fuzzydroid
+```
+
+Start a new session and describe the PCB task, or explicitly use `$kicad:kicad`
+in Codex or `/kicad:kicad` in Claude Code. For example, “inspect this board”,
+“add a 5 mm LED”, or “render this PCB in 3D”. The main skill loads setup and
+doctor when needed, discovers the available tools, performs the requested work,
+and verifies the result. You do not need to invoke setup or doctor separately.
+Those skills remain available as optional direct entry points.
+
+Requirements: KiCad, `uv`, and Python 3.11 for the external runtime (managed by
+uv). The qualified live combination is **KiCad 10.0.7, macOS ARM64**. The embedded
+backend explicitly supports KiCad 10; Windows/Linux runtime qualification is
+pending. Their paths and loopback protocol are covered by automated tests.
+This is a preview, not a claim of complete KiCad control.
+
+## Architecture
+
+```text
+agent -> MCP gateway / fzd-kicad CLI -> official KiCad IPC
+                                  -> authenticated loopback client
+                                       -> bridge inside KiCad
+                                       -> wx main-thread dispatch
+                                       -> shared native registry <- tool panel
+```
+
+Native tools are discovered dynamically, so a project registration appears in the
+CLI, MCP tool list and refreshed panel without writing three wrappers. The panel
+is a developer console with a tool selector, JSON parameters and JSON results.
+Its buttons call the same dispatcher as the agent. IPC remains external to avoid
+calling KiCad's IPC server synchronously from KiCad's main thread.
+
+## CLI and MCP
+
+`fzd-kicad` is installed in the per-plugin fuzzydroid venv. The portable launcher reads
+that location from the setup state:
+
+```bash
+uv run --no-project --python 3.11 ./scripts/run.py --json tools
+uv run --no-project --python 3.11 ./scripts/run.py --json ping --backend native
+```
+
+Run the launcher from this plugin directory. For scripts with the plugin venv on
+PATH, the equivalent commands are `fzd-kicad --json tools` and
+`fzd-kicad --json ping --backend native`.
+
+Call any discovered tool with `call <name> --params-file <file>`; `-` reads JSON
+from stdin. Native process ambiguity requires `--instance <pid>`. IPC endpoint
+selection uses `KICAD_API_SOCKET`. Editing operations require the expected board
+path, so changing the open document cannot silently redirect an edit.
+
+The bundled `.mcp.json` uses the same installed runtime. MCP maps dotted names to
+double underscores: `native.inspect` becomes `native__inspect`. Reload the agent
+after installation and refresh its tool list after dynamic registrations.
+
+## Fabrication and Fusion handoff
+
+For a saved two-layer board and schematic, run:
+
+```text
+fzd-kicad --json handoff --board /absolute/board.kicad_pcb --output /new/handoff-directory --fusion
+```
+
+The command saves the PCB, runs ERC and DRC with schematic parity, exports Gerbers,
+drills, a full-scale copper PDF and assembled STEP, then imports the model into
+Fusion and checks its dimensions and component geometry. A receipt links source
+and artifact hashes. The fabrication ZIP is created after all requested checks
+pass. See the [handoff reference](skills/kicad/references/handoff.md) for scope,
+tolerance, outputs and the optional Fusion setup.
+
+## Coverage and boundaries
+
+| Provider | Included capabilities |
+|---|---|
+| IPC | Board inspection, footprint moves/rotation, Python access to exposed items, undo-grouped edits, save, snapshot render/STEP/DRC |
+| Native | In-process Python, live library footprint loading/removal, 3D model inspection, windows/menus, shared tool panel, project registration |
+| KiCad CLI | Rendering and mechanical export of fresh live snapshots; saved original projects remain the route for custom-rule DRC and fabrication outputs |
+
+Native Python has **no automatic rollback**; it is a trusted operator interface.
+IPC mutation scripts retain undo grouping and rollback on failure. Neither Python
+interface is a sandbox. Timed-out writes are not retried automatically: their
+outcome must be inspected. Newly placed footprints need pad-net assignments, and
+moving footprints doesn't reroute their tracks.
+
+Live schematic editing and arbitrary internal C++ access are not established.
+Native bindings are deprecated and planned for removal in KiCad 11. The current
+IPC-only setup option for other majors still requires version-specific testing.
+
+## Updates and removal
+
+Use native `/plugin update` followed by `/kicad:doctor`. Rerun setup for dependency
+or checkout drift, and restart PCB Editor for changed embedded code. Doctor checks
+source hashes, loader integrity and the editable install's root.
+
+To disable the native bridge, rerun setup with `--no-native`, then restart PCB
+Editor. This removes only the loader generated by this plugin. Removing the
+Claude plugin alone does not unload already-running embedded Python.
+
+The Python distribution uses its own `fuzzydroid_kicad` namespace, matching the
+current Fusion plugin's independent-package approach. It does not overwrite
+Fusion modules or change Fusion's settings. User-specific paths are written by
+setup; none are embedded in the published skill or MCP manifest.
+
+See [TEST.md](TEST.md) for reproducible tests and pending release qualification.
+The [architecture reference](skills/kicad/references/architecture.md) documents
+project registration, discovery and main-thread behavior.

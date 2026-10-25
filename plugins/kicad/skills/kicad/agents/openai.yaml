@@ -1,0 +1,4 @@
+interface:
+  display_name: "KiCad"
+  short_description: "Control live PCB edits and native KiCad tools"
+  default_prompt: "Use $kicad:kicad to handle my PCB task, including any needed setup and diagnostics."
