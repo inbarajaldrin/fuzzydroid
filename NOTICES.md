@@ -55,6 +55,33 @@ derivative-work relationship.
 **Used in:**
 - Not shipped to end users. Used as IDE autocomplete aid during development only. Will NOT be included in the installable plugin.
 
+## KiCad Python IPC bindings
+
+**Source:** https://gitlab.com/kicad/code/kicad-python
+**License:** MIT
+**Used in:** `plugins/kicad/` installs and imports the official `kicad-python`
+package. Setup can build the revision-pinned stable source for KiCad 10.0.7.
+The upstream archives and generated dependency remain outside this repository;
+upstream headers are retained. The plugin's bridge and tool registry are original
+implementations, not copies of another MCP server.
+
+## MCP Python SDK
+
+**Source:** https://github.com/modelcontextprotocol/python-sdk
+**License:** MIT
+**Used in:** `plugins/kicad/` installs the SDK as a dependency for its stdio MCP
+adapter. SDK code is not vendored in the plugin.
+
+## Copyleft dependencies: KiCad runtime
+
+**Source:** https://gitlab.com/kicad/code/kicad
+**License:** See KiCad's upstream GPL licensing and file headers.
+**Scope:** The plugin talks to an installed KiCad application through IPC and,
+on KiCad 10, its installed SWIG bindings. No KiCad binary or SWIG implementation
+is bundled. Setup retrieves a checksum-verified API-proto subtree as an input to
+the official IPC bindings build; those upstream files retain their headers and
+are not committed or shipped inside the plugin package.
+
 ---
 
 ## How to add a new upstream

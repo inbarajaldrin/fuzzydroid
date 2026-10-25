@@ -30,6 +30,24 @@
       "category": "documentation",
       "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
       "tags": ["robotics", "docs", "live-fetch", "lerobot", "nvidia", "mujoco"]
+    },
+    {
+      "name": "kicad",
+      "source": "./plugins/kicad",
+      "description": "Live KiCad PCB automation through official IPC and an embedded main-thread bridge; shared CLI, MCP and native tool panel.",
+      "author": {
+        "name": "Aldrin Inbaraj"
+      },
+      "category": "development",
+      "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+      "tags": [
+        "kicad",
+        "pcb",
+        "electronics",
+        "mcp",
+        "cad",
+        "robotics"
+      ]
     }
   ]
 }

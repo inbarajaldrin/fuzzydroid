@@ -8,6 +8,7 @@ An AI agent plugin marketplace for robotics developers.
 |---|---|
 | [`fusion`](plugins/fusion/) | Control Autodesk Fusion 360 — search, open, export STEP/STL/URDF, view models, run Python |
 | [`robodocs`](plugins/robodocs/) | Live-fetched docs for the robotics stack — LeRobot + the NVIDIA Physical-AI suite (Isaac, GR00T, Cosmos, Warp, Omniverse, OpenUSD) |
+| [`kicad`](plugins/kicad/) | Live KiCad PCB control, component models, native tools panel, rendering and STEP exports (preview) |
 
 ## Install
 
@@ -20,6 +21,7 @@ In Claude Code:
 Then install the plugins you want:
 
 ```
+/plugin install kicad@fuzzydroid        # KiCad preview; see setup and qualification notes
 /plugin install fusion@fuzzydroid       # see plugins/fusion/README.md for setup
 /plugin install robodocs@fuzzydroid     # robotics documentation skills
 ```
@@ -30,6 +32,7 @@ Then install the plugins you want:
 
 Plugin-specific requirements live in each plugin's README:
 
+- [`kicad`](plugins/kicad/README.md) — KiCad 10, `uv`; macOS qualified, live Windows qualification pending
 - [`fusion`](plugins/fusion/README.md) — Fusion 360, `uv`, macOS/Windows
 - [`robodocs`](plugins/robodocs/README.md) — none
 
