@@ -26,10 +26,20 @@ Once installed, the skills auto-trigger on relevant mentions ("LeRobot teleop",
 "Isaac Lab PPO", "OpenUSD prim", "NVIDIA forums known issue", etc.) — no
 explicit slash invocation required.
 
+In Codex:
+
+```bash
+codex plugin marketplace add https://github.com/inbarajaldrin/fuzzydroid
+codex plugin add robodocs@fuzzydroid
+```
+
+Start a new session and use `$robodocs:lerobot`, `$robodocs:mujoco`, or
+`$robodocs:nvidia`. The same workflows and reference files serve both hosts.
+
 ## Requirements
 
-None beyond Claude Code itself. The skills use Claude Code's built-in `WebFetch`
-tool to pull live documentation — no Python deps, no API keys, no system packages.
+Claude Code or Codex with web access. The skills use the host's web-fetch or shell
+tools to pull live documentation — no Python deps, no API keys, no system packages.
 
 ## Why live-fetched?
 

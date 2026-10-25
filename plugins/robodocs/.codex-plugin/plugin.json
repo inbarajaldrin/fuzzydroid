@@ -1,0 +1,25 @@
+{
+  "name": "robodocs",
+  "description": "Live-fetched documentation skills for the robotics stack \u2014 HuggingFace LeRobot, the NVIDIA Physical-AI suite (Isaac Sim/Lab/ROS, GR00T, Cosmos, Warp, Omniverse, OpenUSD, NGC Catalog, Developer Forums), and the MuJoCo ecosystem (MJX, MJWarp, Menagerie, Playground, MPC, dm_control)",
+  "author": {
+    "name": "Aldrin Inbaraj"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+  "repository": "https://github.com/inbarajaldrin/fuzzydroid",
+  "keywords": [
+    "robotics",
+    "docs",
+    "live-fetch",
+    "lerobot",
+    "nvidia",
+    "mujoco"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "RoboDocs",
+    "shortDescription": "Live-fetched documentation skills for the robotics stack",
+    "developerName": "Aldrin Inbaraj",
+    "category": "Developer Tools"
+  }
+}

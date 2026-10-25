@@ -15,10 +15,5 @@
     "lerobot",
     "nvidia",
     "mujoco"
-  ],
-  "skills": [
-    "./skills/lerobot",
-    "./skills/nvidia",
-    "./skills/mujoco"
   ]
 }

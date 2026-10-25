@@ -1,0 +1,68 @@
+{
+  "name": "fuzzydroid",
+  "interface": {
+    "displayName": "fuzzydroid"
+  },
+  "plugins": [
+    {
+      "name": "fusion",
+      "source": {
+        "source": "local",
+        "path": "./plugins/fusion"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "kicad",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kicad"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "robodocs",
+      "source": {
+        "source": "local",
+        "path": "./plugins/robodocs"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "isaacsim",
+      "source": {
+        "source": "local",
+        "path": "./plugins/isaacsim"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "isaaclab",
+      "source": {
+        "source": "local",
+        "path": "./plugins/isaaclab"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

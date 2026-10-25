@@ -12,24 +12,93 @@
     {
       "name": "fusion",
       "source": "./plugins/fusion",
-      "description": "Control Autodesk Fusion 360 from Claude Code - search projects, open files, export STEP/STL/URDF, run Python scripts inside Fusion's runtime",
+      "description": "Control Autodesk Fusion 360\u2014search projects, open files, export STEP/STL/URDF, and run Python scripts inside Fusion.",
       "author": {
         "name": "Aldrin Inbaraj"
       },
       "category": "development",
       "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
-      "tags": ["fusion360", "autodesk", "cad", "urdf", "step", "stl", "robotics"]
+      "tags": [
+        "fusion360",
+        "autodesk",
+        "cad",
+        "urdf",
+        "step",
+        "stl",
+        "robotics"
+      ]
+    },
+    {
+      "name": "kicad",
+      "source": "./plugins/kicad",
+      "description": "Live KiCad PCB automation through official IPC and an embedded main-thread bridge; shared CLI, MCP and native tool panel.",
+      "author": {
+        "name": "Aldrin Inbaraj"
+      },
+      "category": "development",
+      "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+      "tags": [
+        "kicad",
+        "pcb",
+        "electronics",
+        "mcp",
+        "cad",
+        "robotics"
+      ]
     },
     {
       "name": "robodocs",
       "source": "./plugins/robodocs",
-      "description": "Live-fetched documentation skills for the robotics stack — HuggingFace LeRobot, the NVIDIA Physical-AI suite (Isaac Sim/Lab/ROS, GR00T, Cosmos, Warp, Omniverse, OpenUSD, NGC Catalog, Developer Forums), and the MuJoCo ecosystem (MJX, MJWarp, Menagerie, Playground, MPC, dm_control)",
+      "description": "Live-fetched documentation skills for the robotics stack \u2014 HuggingFace LeRobot, the NVIDIA Physical-AI suite (Isaac Sim/Lab/ROS, GR00T, Cosmos, Warp, Omniverse, OpenUSD, NGC Catalog, Developer Forums), and the MuJoCo ecosystem (MJX, MJWarp, Menagerie, Playground, MPC, dm_control)",
       "author": {
         "name": "Aldrin Inbaraj"
       },
       "category": "documentation",
       "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
-      "tags": ["robotics", "docs", "live-fetch", "lerobot", "nvidia", "mujoco"]
+      "tags": [
+        "robotics",
+        "docs",
+        "lerobot",
+        "nvidia",
+        "mujoco"
+      ]
+    },
+    {
+      "name": "isaacsim",
+      "source": "./plugins/isaacsim",
+      "description": "NVIDIA Isaac Sim setup and health for robotics workstations \u2014 detects existing installs (pip/binary/source), registers the omni.kit.mcp bridge, persistently enables the ROS 2 bridge, and installs the native Isaac Viewer streaming app on macOS",
+      "author": {
+        "name": "Aldrin Inbaraj"
+      },
+      "category": "development",
+      "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+      "tags": [
+        "isaac-sim",
+        "nvidia",
+        "omniverse",
+        "mcp",
+        "ros2",
+        "webrtc",
+        "robotics"
+      ]
+    },
+    {
+      "name": "isaaclab",
+      "source": "./plugins/isaaclab",
+      "description": "Isaac Lab setup, health, and project scaffolding \u2014 detects existing installs (pip venv or source, never assuming a venv name), scaffolds extension projects from the pinned template with omni.kit.mcp bridge launch support, and enforces the per-profile launch-guard rule",
+      "author": {
+        "name": "Aldrin Inbaraj"
+      },
+      "category": "development",
+      "homepage": "https://github.com/inbarajaldrin/fuzzydroid",
+      "tags": [
+        "isaac-lab",
+        "isaac-sim",
+        "nvidia",
+        "reinforcement-learning",
+        "robotics",
+        "mcp"
+      ]
     }
   ]
 }

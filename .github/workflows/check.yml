@@ -1,0 +1,34 @@
+name: Check plugins
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  packaging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python tools/sync_plugins.py --check
+      - run: python tools/check_plugins.py
+      - run: python tools/check_common_sync.py
+      - run: git diff --check
+
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin: [fusion, isaacsim, isaaclab, kicad]
+    defaults:
+      run:
+        working-directory: plugins/${{ matrix.plugin }}/lib/fuzzydroid_${{ matrix.plugin }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv run --python 3.11 --extra dev python -m pytest -q
+      - run: uv run --python 3.11 --extra dev --with ruff ruff check fuzzydroid_${{ matrix.plugin }}
