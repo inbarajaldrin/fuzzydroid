@@ -2,6 +2,8 @@
 
 An AI agent plugin marketplace for robotics developers using Claude Code or Codex.
 
+https://github.com/user-attachments/assets/546c56ae-6638-4640-8cca-06db912f37f8
+
 ## Plugins
 
 | Plugin | Description |
